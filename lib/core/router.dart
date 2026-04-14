@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../features/auth/login_screen.dart';
+import '../features/dashboard/tabs_layout.dart';
+import '../features/dashboard/dashboard_screen.dart';
+import '../features/course/catalog_screen.dart';
+import '../features/course/course_details_screen.dart';
+import '../features/dashboard/learning_hub_screen.dart';
+import '../features/profile/profile_screen.dart';
+import '../features/profile/personal_info_screen.dart';
+import '../features/profile/notifications_settings_screen.dart';
+import '../features/profile/security_screen.dart';
+import '../features/profile/privacy_policy_screen.dart';
+
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+
+String _initialLocation() {
+  final session = Supabase.instance.client.auth.currentSession;
+  return session != null ? '/catalog' : '/login';
+}
+
+final router = GoRouter(
+  navigatorKey: _rootNavigatorKey,
+  initialLocation: _initialLocation(),
+  redirect: (context, state) {
+    final session = Supabase.instance.client.auth.currentSession;
+    final isOnLogin = state.uri.path == '/login';
+    // If logged in and on login page, redirect to catalog (discover)
+    if (session != null && isOnLogin) return '/catalog';
+    // If not logged in and not on login, redirect to login
+    if (session == null && !isOnLogin) return '/login';
+    // If they manually try /discover, redirect to /catalog
+    if (state.uri.path == '/discover') return '/catalog';
+    return null;
+  },
+  routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    // Full screen route taking up the entire display
+    GoRoute(
+      path: '/course/:slug',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final slug = state.pathParameters['slug']!;
+        // We will pass the full mock data list from Catalog/Dashboard or map it here.
+        // For simplicity we just recreate a mock stub if needed, or pass it in State 'extra'.
+        // In this implementation, since details map isn't deeply fetched from Supabase yet,
+        // we map basic metadata for the UI layout.
+        final extraData = state.extra as Map<String, dynamic>? ?? {};
+        
+        // Ensure minimum data fields exist to draw the immersive screen without crashing
+        final safeData = {
+          'slug': slug,
+          'title': extraData['title'] ?? 'Mastering $slug',
+          'image': extraData['image'] ?? 'https://via.placeholder.com/600x400',
+          'rating': extraData['rating'] ?? 4.9,
+          'category': extraData['category'] ?? 'GENERAL',
+        };
+        return CourseDetailsScreen(courseData: safeData);
+      },
+    ),
+    ShellRoute(
+      navigatorKey: _shellNavigatorKey,
+      builder: (context, state, child) {
+        return TabsLayout(child: child);
+      },
+      routes: [
+        GoRoute(
+          path: '/achievements',
+          builder: (context, state) => const DashboardScreen(),
+        ),
+        GoRoute(
+          path: '/catalog',
+          builder: (context, state) => const CatalogScreen(),
+        ),
+        GoRoute(
+          path: '/learning-hub',
+          builder: (context, state) => const LearningHubScreen(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+          routes: [
+            GoRoute(
+              path: 'info',
+              builder: (context, state) => const PersonalInfoScreen(),
+            ),
+            GoRoute(
+              path: 'notifications',
+              builder: (context, state) => const NotificationsSettingsScreen(),
+            ),
+            GoRoute(
+              path: 'security',
+              builder: (context, state) => const SecurityScreen(),
+            ),
+            GoRoute(
+              path: 'privacy',
+              builder: (context, state) => const PrivacyPolicyScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);

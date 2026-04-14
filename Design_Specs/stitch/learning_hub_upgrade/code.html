@@ -1,0 +1,282 @@
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexgen Learning - My Learning Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#222588",
+                        "secondary-fixed-dim": "#bcbeff",
+                        "on-tertiary-container": "#003355",
+                        "surface-container-highest": "#eae8e2",
+                        "secondary": "#555abb",
+                        "surface-container-low": "#fcf9f4",
+                        "error": "#be2d06",
+                        "surface-container-high": "#f0eee8",
+                        "primary-fixed-dim": "#ef915a",
+                        "tertiary-container": "#69b6fd",
+                        "on-secondary-container": "#373b9c",
+                        "error-dim": "#b92902",
+                        "on-secondary-fixed-variant": "#4145a6",
+                        "secondary-dim": "#494dae",
+                        "on-error-container": "#520c00",
+                        "error-container": "#f95630",
+                        "surface-variant": "#eae8e2",
+                        "tertiary": "#0069a7",
+                        "surface-container": "#f6f3ee",
+                        "on-primary-container": "#5a2500",
+                        "primary": "#9c4f1e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#00192e",
+                        "surface-tint": "#9c4f1e",
+                        "outline-variant": "#bbb9b4",
+                        "secondary-container": "#cdceff",
+                        "tertiary-fixed": "#69b6fd",
+                        "inverse-surface": "#0e0e0c",
+                        "surface": "#fffcf7",
+                        "tertiary-dim": "#005c94",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#9e9d98",
+                        "tertiary-fixed-dim": "#5aa9ef",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#656461",
+                        "secondary-fixed": "#cdceff",
+                        "on-error": "#ffffff",
+                        "background": "#fffcf7",
+                        "on-primary-fixed-variant": "#682c00",
+                        "primary-fixed": "#ff9e66",
+                        "on-tertiary-fixed-variant": "#003c63",
+                        "primary-dim": "#8d4413",
+                        "inverse-primary": "#ff9e66",
+                        "surface-dim": "#e5e2dc",
+                        "outline": "#82807c",
+                        "primary-container": "#ff9e66",
+                        "on-primary-fixed": "#361300",
+                        "surface-bright": "#fffcf7",
+                        "on-background": "#383835",
+                        "on-surface": "#383835"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>.grainy-gradient {
+    background: linear-gradient(135deg, var(--tw-gradient-stops));
+    position: relative
+    }
+.grainy-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCXLxmzypGqXLX6QbYj30YEC2RtMPo0kWAeFtzia9nZdjwMGVYkZK3qVSCgBVGH6huWaURf9OVj3jHTflRFkI3V_iPoIZAjQ5mXKq97Ee37wB-Hm3eCcaM9WKlZVl62u9OA9lwlxv_V7bW9jUhcFdulBE9QpYEEQPvroptmLQ3WhOauhNEhg-BGndu4DaId7Gu32ma6_KcDQ4pSpo-JBWe8YGqklq0uErUBI4GdzLP1VlF6B87Mj5jxA5npTFfok5g9qMqNwcJs-1oJ);
+    filter: contrast(150%) brightness(100%);
+    pointer-events: none
+    }
+.doodle-star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#fffcf7]/80 backdrop-blur-2xl no-border bg-gradient-to-b from-[#fffcf7] via-[#fffcf7]/50 to-transparent">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover" data-alt="Profile portrait of a friendly student with a warm smile in a brightly lit studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMn0AgsDVrrPThYtdGUG5Eze1J1UQKsjUQ4Ge4jTWSiXEOhbpyPBU6qB16MAynURWrxCxFEwFuFGjXau6q_GWQp38m_QK3oWiGCx_oStPRjYAPTM5zN3R25y8Lgpna-XvSDi5zQOm64c62cbaU2Yvaosea1rBJh4E1fT5tYo8ypAZOIvurldere2ANsZiWNCStc8o-5ucfodpT10NkKnJdOtWLBOWUmYYYCoTKOO6KkNgTHT_qQR828j40CfQvjaKfX7iSH-TRrEiF"/>
+</div>
+<h1 class="text-2xl font-black text-[#9c4f1e] tracking-tighter italic">Nexgen Learning</h1>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-[#383835] hover:opacity-70 transition-all active:scale-95 duration-300 ease-out">notifications</button>
+<div class="hidden md:flex gap-8 text-[#383835] font-bold uppercase tracking-widest text-xs">
+<a class="hover:text-primary transition-colors" href="#">Discover</a>
+<a class="text-primary" href="#">My Learning</a>
+<a class="hover:text-primary transition-colors" href="#">Achievements</a>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-32 pb-40 px-6 max-w-screen-xl mx-auto">
+<!-- Hero Section -->
+<section class="mb-16 relative">
+<div class="absolute -top-12 -left-8 w-24 h-24 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="absolute top-10 right-0 opacity-20">
+<svg class="text-secondary fill-current" height="120" viewbox="0 0 100 100" width="120">
+<path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z"></path>
+</svg>
+</div>
+<div class="relative z-10">
+<span class="text-secondary font-bold tracking-[0.2em] uppercase text-xs mb-4 block">Current Progress</span>
+<h2 class="text-6xl font-black tracking-tighter text-on-surface max-w-2xl leading-[0.9] mb-6">
+                    Keep blooming, <br/><span class="text-primary italic">Alex.</span>
+</h2>
+<p class="text-on-surface-variant text-lg max-w-md leading-relaxed">
+                    You've spent 12 hours learning this week. You're just 3 lessons away from your weekly goal!
+                </p>
+</div>
+</section>
+<!-- Active Courses Grid -->
+<section class="mb-20">
+<div class="flex justify-between items-end mb-10">
+<div>
+<h3 class="text-3xl font-extrabold tracking-tight">Active Courses</h3>
+<div class="h-1.5 w-12 bg-primary mt-2 rounded-full"></div>
+</div>
+<button class="text-primary font-bold text-sm uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-all">
+                    View Schedule <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Course Card 1 -->
+<div class="group relative surface-container-lowest rounded-xl p-8 flex flex-col justify-between h-[400px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all hover:translate-y-[-8px]">
+<div class="absolute top-0 right-0 w-48 h-48 grainy-gradient from-primary-container to-primary/40 rounded-bl-[100px] -mr-8 -mt-8 opacity-20 transition-transform group-hover:scale-110"></div>
+<div class="relative">
+<div class="flex gap-2 mb-6">
+<span class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-black uppercase tracking-widest">Design</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Week 4</span>
+</div>
+<h4 class="text-4xl font-extrabold leading-tight text-on-surface mb-4">Editorial UI &amp; Tonal Depth</h4>
+<p class="text-on-surface-variant text-sm max-w-xs">Mastering the art of whitespace and asymmetrical layouts for modern digital brands.</p>
+</div>
+<div class="relative">
+<div class="flex justify-between items-end mb-3">
+<span class="text-xs font-bold text-on-surface-variant">75% Complete</span>
+<span class="text-primary font-black italic text-xl">12/16 Lessons</span>
+</div>
+<div class="w-full h-4 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary grainy-gradient from-primary to-primary-fixed w-3/4 rounded-full"></div>
+</div>
+<button class="mt-8 w-full py-4 bg-on-surface text-surface rounded-full font-bold uppercase tracking-[0.15em] text-xs hover:bg-primary transition-colors flex items-center justify-center gap-2">
+                            Resume Lesson <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Course Card 2 -->
+<div class="group relative bg-secondary-container/30 rounded-xl p-8 flex flex-col justify-between h-[400px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all hover:translate-y-[-8px]">
+<div class="absolute top-0 right-0 w-48 h-48 grainy-gradient from-secondary-fixed to-secondary/40 rounded-bl-[100px] -mr-8 -mt-8 opacity-20 transition-transform group-hover:scale-110"></div>
+<div class="relative">
+<div class="flex gap-2 mb-6">
+<span class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-black uppercase tracking-widest">Coding</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Week 2</span>
+</div>
+<h4 class="text-4xl font-extrabold leading-tight text-on-surface mb-4">Advanced Motion Principles</h4>
+<p class="text-on-surface-variant text-sm max-w-xs">Exploring CSS-only animations and the psychology of movement in user interfaces.</p>
+</div>
+<div class="relative">
+<div class="flex justify-between items-end mb-3">
+<span class="text-xs font-bold text-on-surface-variant">30% Complete</span>
+<span class="text-secondary font-black italic text-xl">4/12 Lessons</span>
+</div>
+<div class="w-full h-4 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary grainy-gradient from-secondary to-secondary-dim w-[30%] rounded-full"></div>
+</div>
+<button class="mt-8 w-full py-4 border-2 border-on-surface text-on-surface rounded-full font-bold uppercase tracking-[0.15em] text-xs hover:bg-on-surface hover:text-surface transition-all flex items-center justify-center gap-2">
+                            Resume Lesson <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recently Completed -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+<div class="lg:col-span-1">
+<h3 class="text-3xl font-extrabold tracking-tight mb-4">Mastery Badges</h3>
+<p class="text-on-surface-variant leading-relaxed mb-8">
+                    Your collection of certifications and skill endorsements earned through dedicated practice.
+                </p>
+<div class="relative h-48 rounded-xl bg-tertiary-container/10 border-2 border-dashed border-outline-variant flex flex-col items-center justify-center p-6 text-center">
+<span class="material-symbols-outlined text-tertiary text-4xl mb-2">add_circle</span>
+<p class="text-xs font-bold text-tertiary uppercase tracking-widest">New Quest Available</p>
+<p class="text-[10px] text-on-surface-variant mt-1 italic">Unlock "Vector Alchemy" badge</p>
+</div>
+</div>
+<div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-6">
+<!-- Badge 1 -->
+<div class="surface-container-low rounded-xl p-6 flex flex-col items-center text-center group transition-all hover:bg-white hover:shadow-xl">
+<div class="w-20 h-20 mb-4 rounded-full grainy-gradient from-primary-container to-primary flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-widest text-primary mb-1">UI Wizard</span>
+<span class="text-xs text-on-surface-variant">Earned Jan 12</span>
+</div>
+<!-- Badge 2 -->
+<div class="surface-container-low rounded-xl p-6 flex flex-col items-center text-center group transition-all hover:bg-white hover:shadow-xl">
+<div class="w-20 h-20 mb-4 rounded-full grainy-gradient from-secondary-container to-secondary flex items-center justify-center shadow-lg transform group-hover:-rotate-12 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-widest text-secondary mb-1">Color Theory</span>
+<span class="text-xs text-on-surface-variant">Earned Jan 05</span>
+</div>
+<!-- Badge 3 -->
+<div class="surface-container-low rounded-xl p-6 flex flex-col items-center text-center group transition-all hover:bg-white hover:shadow-xl">
+<div class="w-20 h-20 mb-4 rounded-full grainy-gradient from-tertiary-container to-tertiary flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-widest text-tertiary mb-1">Fast Learner</span>
+<span class="text-xs text-on-surface-variant">Earned Dec 28</span>
+</div>
+<!-- Badge 4 -->
+<div class="surface-container-low rounded-xl p-6 flex flex-col items-center text-center group transition-all hover:bg-white hover:shadow-xl">
+<div class="w-20 h-20 mb-4 rounded-full bg-surface-container-high flex items-center justify-center shadow-inner opacity-50">
+<span class="material-symbols-outlined text-outline text-3xl">lock</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Locked</span>
+<span class="text-xs text-on-surface-variant">Keep going!</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 rounded-[40px] bg-[#fffcf7]/90 backdrop-blur-xl no-border shadow-[0_20px_50px_rgba(156,79,30,0.1)]">
+<div class="flex justify-around items-center h-24 px-4 w-full">
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 transition-colors hover:text-[#9c4f1e]" href="#">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#ff9e66] text-white rounded-full px-6 py-3 transition-all duration-500 shadow-lg shadow-[#ff9e66]/40 active:scale-90 duration-200 cubic-bezier(0.34,1.56,0.64,1)" href="#">
+<span class="material-symbols-outlined mb-1">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">My Learning</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 transition-colors hover:text-[#9c4f1e]" href="#">
+<span class="material-symbols-outlined mb-1">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Achievements</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 transition-colors hover:text-[#9c4f1e]" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Decorative Doodles -->
+<div class="fixed top-1/4 -right-12 pointer-events-none opacity-10 hidden lg:block">
+<svg class="text-primary fill-current" height="200" viewbox="0 0 100 100" width="200">
+<path d="M10,50 Q30,10 50,50 T90,50" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+<path d="M10,60 Q30,20 50,60 T90,60" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+</div>
+</body></html>

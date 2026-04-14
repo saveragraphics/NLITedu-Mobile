@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexgen Learning | Course Catalog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#222588",
+                        "secondary-fixed-dim": "#bcbeff",
+                        "on-tertiary-container": "#003355",
+                        "surface-container-highest": "#eae8e2",
+                        "secondary": "#555abb",
+                        "surface-container-low": "#fcf9f4",
+                        "error": "#be2d06",
+                        "surface-container-high": "#f0eee8",
+                        "primary-fixed-dim": "#ef915a",
+                        "tertiary-container": "#69b6fd",
+                        "on-secondary-container": "#373b9c",
+                        "error-dim": "#b92902",
+                        "on-secondary-fixed-variant": "#4145a6",
+                        "secondary-dim": "#494dae",
+                        "on-error-container": "#520c00",
+                        "error-container": "#f95630",
+                        "surface-variant": "#eae8e2",
+                        "tertiary": "#0069a7",
+                        "surface-container": "#f6f3ee",
+                        "on-primary-container": "#5a2500",
+                        "primary": "#9c4f1e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#00192e",
+                        "surface-tint": "#9c4f1e",
+                        "outline-variant": "#bbb9b4",
+                        "secondary-container": "#cdceff",
+                        "tertiary-fixed": "#69b6fd",
+                        "inverse-surface": "#0e0e0c",
+                        "surface": "#fffcf7",
+                        "tertiary-dim": "#005c94",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#9e9d98",
+                        "tertiary-fixed-dim": "#5aa9ef",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#656461",
+                        "secondary-fixed": "#cdceff",
+                        "on-error": "#ffffff",
+                        "background": "#fffcf7",
+                        "on-primary-fixed-variant": "#682c00",
+                        "primary-fixed": "#ff9e66",
+                        "on-tertiary-fixed-variant": "#003c63",
+                        "primary-dim": "#8d4413",
+                        "inverse-primary": "#ff9e66",
+                        "surface-dim": "#e5e2dc",
+                        "outline": "#82807c",
+                        "primary-container": "#ff9e66",
+                        "on-primary-fixed": "#361300",
+                        "surface-bright": "#fffcf7",
+                        "on-background": "#383835",
+                        "on-surface": "#383835"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fffcf7; color: #383835; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .grainy-gradient {
+            background: linear-gradient(135deg, #9c4f1e 0%, #ff9e66 100%);
+            position: relative;
+        }
+        .grainy-gradient::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#fffcf7]/80 backdrop-blur-2xl">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Student Profile" class="w-full h-full object-cover" data-alt="portrait of a cheerful young student with warm lighting and soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADMEhhVSVJwWRcNPFrerGUv-Sg5dWDIsYNHBOLDl76a08B0gPrjq_UhWeX1hyjBu4Y42vxroATyYy1u0vSrfApWCVBL7Yb52TB8SUWKya7Y_opiUtc_7fqgvvxtrrxRIC11M4hf4fWTzUdXf5UEnP8d_HA2XslKNTeYAA_6G5U4afEwSWdL_iXWobQPYs9mSU2c4goux1l2bhRRQ8LZaOwt7-2RmPYlPH2nPch_vIv9WcvWFF-JzjywWQ_gkPBMhcygZ_Nhrs0t8Ss"/>
+</div>
+<h1 class="text-2xl font-black text-[#9c4f1e] tracking-tighter italic">Nexgen Learning</h1>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-[#383835] hover:opacity-70 transition-all active:scale-95 duration-300 ease-out">search</button>
+<button class="material-symbols-outlined text-[#383835] hover:opacity-70 transition-all active:scale-95 duration-300 ease-out" data-icon="notifications">notifications</button>
+</div>
+</div>
+<div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant/10 to-transparent"></div>
+</header>
+<main class="pt-32 pb-32 px-6 max-w-screen-xl mx-auto">
+<!-- Editorial Hero Section -->
+<section class="relative mb-16">
+<div class="absolute -top-12 -left-8 text-secondary/20 pointer-events-none">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="relative z-10">
+<h2 class="text-6xl font-extrabold tracking-tight text-on-surface mb-4 leading-tight">
+                    Expand your <br/>
+<span class="text-primary italic">creative horizon.</span>
+</h2>
+<p class="text-on-surface-variant max-w-md text-lg leading-relaxed">
+                    A curated selection of lessons designed to spark curiosity and master new skills in a playful, intentional environment.
+                </p>
+</div>
+<div class="absolute top-0 right-0 hidden md:block">
+<span class="material-symbols-outlined text-primary/30 text-[80px] animate-pulse">edit</span>
+</div>
+</section>
+<!-- Search & Filter Cluster -->
+<section class="mb-12 flex flex-col md:flex-row gap-4 items-center">
+<div class="relative w-full md:flex-1 group">
+<span class="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">search</span>
+<input class="w-full pl-16 pr-8 py-5 bg-surface-container-low border-none rounded-full focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-on-surface-variant/50 transition-all" placeholder="Search for courses, skills, or mentors..." type="text"/>
+</div>
+<div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+<button class="px-6 py-4 bg-secondary text-on-secondary rounded-full font-bold text-sm whitespace-nowrap shadow-lg shadow-secondary/20 transition-all hover:scale-105 active:scale-95">All Courses</button>
+<button class="px-6 py-4 bg-surface-container-highest text-on-surface rounded-full font-bold text-sm whitespace-nowrap hover:bg-secondary-container transition-all active:scale-95">Design</button>
+<button class="px-6 py-4 bg-surface-container-highest text-on-surface rounded-full font-bold text-sm whitespace-nowrap hover:bg-secondary-container transition-all active:scale-95">Development</button>
+<button class="px-6 py-4 bg-surface-container-highest text-on-surface rounded-full font-bold text-sm whitespace-nowrap hover:bg-secondary-container transition-all active:scale-95">Business</button>
+</div>
+</section>
+<!-- Course Grid (Bento Style) -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Featured Course Card (Large) -->
+<div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0_20px_50px_rgba(156,79,30,0.08)] hover:shadow-[0_30px_60px_rgba(156,79,30,0.12)] transition-all duration-500">
+<div class="flex flex-col md:flex-row h-full">
+<div class="md:w-1/2 h-64 md:h-auto relative overflow-hidden">
+<img alt="Digital Illustration" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="whimsical digital illustration of a dreamy workspace with floating planets and vibrant glowing colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-x_ufh8lPU8B8iHfiDUjpazyS2TBaD6Im92ej05Ibgw32In6PMfgD5LJqpGsPVNy2Xj4zd2HolySXm75O4QyLVw-8SK1TGAKyEirgqUX9_BVm7JEMr_2JR20RQ0SHj-MaVay-nYiAegeSWl9za6ZwOmTJkyQ4s1olZ-wc6CcMcyXDJTqFi4rb7WXRevlDYkUldkjqhwJXSzRzK4IZS5PmNAd2hUIoYfgVKIaG7ML9pu96Kue8JCLxlB3kgwaUJrFjxs_r2Xe6ZGwW"/>
+<div class="absolute top-4 left-4 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">Featured</div>
+</div>
+<div class="md:w-1/2 p-10 flex flex-col justify-between relative">
+<div class="absolute -bottom-4 -right-4 text-primary/5 pointer-events-none">
+<span class="material-symbols-outlined text-[180px]">brush</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-4 text-tertiary font-bold text-xs uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm">palette</span> Arts &amp; Crafts
+                            </div>
+<h3 class="text-3xl font-extrabold text-on-surface mb-4 leading-tight">Modern Digital <br/>Symmetry Mastery</h3>
+<p class="text-on-surface-variant line-clamp-3 mb-6">Learn the secrets of balance and color theory in the digital age. A comprehensive guide for aspiring illustrators.</p>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex -space-x-3">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-slate-200 overflow-hidden"><img alt="Instructor" data-alt="close up headshot of male instructor with glasses and a warm smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGywhFkCvIDIN0cHWpWw5ippH22POVuX-5QCtMvo0wHmzWAHNoqT6ARDdPDzSRE9MIw1Ys5bEbZmpzMm1ijAwG-bvotrXIFFbjshSzDLlKfBPZEl6P4lyPOWFb3jKjW3z1AWkOOktQoNnta8-H5lyVb2iSmtFc5DPB8gDfuRFJeP6hPU3PbEfMhsAeX_4ATopJvW6m-9VLZDuA1JR5maU0yJoAKz-j2YvZgTnZPpSLcvyycK7IofFl1kReYmf1g60bkLJGbEtT8jjq"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-slate-300 overflow-hidden"><img alt="Student" data-alt="close up headshot of smiling student with creative lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4kcCm73P9ypds8u_03vwOYCsCBLGy0FJrDiL_lJD1DIRjAFMeOKYoZWZGsUrnHqB3P3DNQ4yHHQSkK9s3eg-kGoIk6acJb5p1uPvZaa21DdO7piYPkfxZ5pDbdHPYhJ6CvZrf1B6nnUVn8fI9t717PAIHQz0_REpnLt3DKOxczt60EUhWDDu5cpAokwIji33iO6mO-Mw_pF8prFnI0JnauGam4Gx9MKiuNpCCujxEhq6miduUzaCJ2Q8UiP3GWCOsPhiU7ea1TbHI"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-primary-container flex items-center justify-center text-[10px] font-bold">+12k</div>
+</div>
+<button class="flex items-center gap-2 text-primary font-bold group-hover:translate-x-2 transition-transform">
+                                Explore <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Card 1 -->
+<div class="md:col-span-4 group bg-surface-container-high rounded-xl p-8 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden">
+<div class="absolute top-[-20%] right-[-10%] opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[200px]" style="font-variation-settings: 'FILL' 1;">code</span>
+</div>
+<div class="relative z-10">
+<div class="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center text-on-secondary mb-6 shadow-lg shadow-secondary/30">
+<span class="material-symbols-outlined text-3xl">terminal</span>
+</div>
+<h3 class="text-2xl font-bold text-on-surface mb-2">Python for Creative Minds</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8">Bridging the gap between logic and aesthetic through generative art.</p>
+</div>
+<div class="relative z-10 flex items-center justify-between">
+<span class="text-sm font-bold text-secondary">24 Lessons</span>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center text-secondary hover:bg-secondary hover:text-on-secondary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">add</span>
+</div>
+</div>
+</div>
+<!-- Small Course 1 -->
+<div class="md:col-span-4 group bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-bright transition-all duration-300">
+<div class="h-48 overflow-hidden relative">
+<img alt="Business" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="minimalist office setup with warm wooden desk and soft sunlight filtering through blinds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSM2yRg3QRnVaA5zxwEHMx4JQOlsGNLMNIh1_iAkZsDNRh-CbpL-joEuM4ZXmCmqgUMwL3mTa9dHmKxbf-oOOSPEJ-FZ6uwUE5imHHxOJwJWFRWcGwV4NEVYpI_ntDl65tCVbHr40Z1GHa4nGLFxJhryattF5TyqAWHHf-a8d3b-W7hto0m9WpEC4sLIRy2yMu7OulmfiFB_iopU8rtxqSos8yhKJ2o9yq4T58pjkIolbwI0rKN1eB5tZ1ZLesKV7Q3JrSSH0AMUgr"/>
+<div class="absolute bottom-4 left-4 bg-surface/90 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">timer</span> 4h 30m
+                    </div>
+</div>
+<div class="p-6">
+<h4 class="font-bold text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">Mindful Marketing</h4>
+<p class="text-on-surface-variant text-sm mb-4">Ethics and empathy in the modern digital marketplace.</p>
+<div class="flex items-center gap-1 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+<span class="text-on-surface-variant text-xs ml-2">(4.8)</span>
+</div>
+</div>
+</div>
+<!-- Small Course 2 (Editorial Style Card) -->
+<div class="md:col-span-4 flex flex-col justify-center items-center p-8 bg-tertiary-container/20 rounded-xl border-2 border-dashed border-tertiary/20 text-center group">
+<div class="w-16 h-16 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center mb-6 group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-3xl">lightbulb</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2">Have a Skill to Share?</h4>
+<p class="text-on-surface-variant text-sm mb-6">Join our community of mentors and start your own learning path today.</p>
+<button class="px-8 py-3 bg-tertiary text-on-tertiary rounded-full font-bold text-sm shadow-xl shadow-tertiary/20 hover:opacity-80 transition-all">Become a Mentor</button>
+</div>
+<!-- Small Course 3 -->
+<div class="md:col-span-4 group bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-bright transition-all duration-300">
+<div class="h-48 overflow-hidden relative">
+<img alt="Design" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="colorful abstract 3D shapes floating in a clean white space with soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFuvImoJ7bCS_sheY4TArhELpLujkq9ifMSN4-4tI-0dm_KmUiUkIKWgdaVIuVSE0WiKlePkARGm2ztkNbB1YWyiEGTKXWIbXe81ORJYx4U99k7DS1iOhLqip4PMbPULHPW18tYd767l9eOWu3N_c9VFlLmx1SLuieYp2REd36IejdHaDXwaPBLUiKeabkA71W5nlph2CYI9NuVOzqQYYwWI_dw5TBIrX570yTFB_FQQ2X1YIKjI7D_K-0RPoIrCLrPlVl7aBkHB7n"/>
+<div class="absolute bottom-4 left-4 bg-surface/90 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">timer</span> 12h 15m
+                    </div>
+</div>
+<div class="p-6">
+<h4 class="font-bold text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">Advanced 3D Geometry</h4>
+<p class="text-on-surface-variant text-sm mb-4">Mastering depth, volume and lighting in digital spaces.</p>
+<div class="flex items-center gap-1 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-on-surface-variant text-xs ml-2">(5.0)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Upsell Banner -->
+<section class="mt-20 grainy-gradient p-12 rounded-xl text-on-primary relative overflow-hidden">
+<div class="absolute top-[-50px] left-[-50px] text-white/10">
+<span class="material-symbols-outlined text-[300px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+<div>
+<h2 class="text-4xl font-extrabold mb-4 italic tracking-tighter">Unlimited potential await.</h2>
+<p class="text-on-primary/80 max-w-lg text-lg">Unlock the full Nexgen library with our Professional Plan. Get access to 500+ premium courses and direct mentor feedback.</p>
+</div>
+<button class="px-10 py-5 bg-white text-primary rounded-full font-black text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all">Go Pro Today</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 rounded-[40px] bg-[#fffcf7]/90 backdrop-blur-xl shadow-[0_20px_50px_rgba(156,79,30,0.1)]">
+<div class="flex justify-around items-center h-24 px-4 w-full">
+<a class="flex flex-col items-center justify-center bg-[#ff9e66] text-white rounded-full px-6 py-3 transition-all duration-500 shadow-lg shadow-[#ff9e66]/40" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em] mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 hover:text-[#9c4f1e] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em] mt-1">My Learning</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 hover:text-[#9c4f1e] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em] mt-1">Achievements</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383835]/60 px-4 hover:text-[#9c4f1e] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em] mt-1">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Contextual FAB (Suppressed on generic discovery pages based on rules, but adding a "Ask Nexa" AI assistant for help if needed, or keeping it clean as per suppression rule for catalog) -->
+</body></html>

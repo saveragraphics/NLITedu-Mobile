@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#222588",
+                    "secondary-fixed-dim": "#bcbeff",
+                    "on-tertiary-container": "#003355",
+                    "surface-container-highest": "#eae8e2",
+                    "secondary": "#555abb",
+                    "surface-container-low": "#fcf9f4",
+                    "error": "#be2d06",
+                    "surface-container-high": "#f0eee8",
+                    "primary-fixed-dim": "#ef915a",
+                    "tertiary-container": "#69b6fd",
+                    "on-secondary-container": "#373b9c",
+                    "error-dim": "#b92902",
+                    "on-secondary-fixed-variant": "#4145a6",
+                    "secondary-dim": "#494dae",
+                    "on-error-container": "#520c00",
+                    "error-container": "#f95630",
+                    "surface-variant": "#eae8e2",
+                    "tertiary": "#0069a7",
+                    "surface-container": "#f6f3ee",
+                    "on-primary-container": "#5a2500",
+                    "primary": "#9c4f1e",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#00192e",
+                    "surface-tint": "#9c4f1e",
+                    "outline-variant": "#bbb9b4",
+                    "secondary-container": "#cdceff",
+                    "tertiary-fixed": "#69b6fd",
+                    "inverse-surface": "#0e0e0c",
+                    "surface": "#fffcf7",
+                    "tertiary-dim": "#005c94",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#9e9d98",
+                    "tertiary-fixed-dim": "#5aa9ef",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#656461",
+                    "secondary-fixed": "#cdceff",
+                    "on-error": "#ffffff",
+                    "background": "#fffcf7",
+                    "on-primary-fixed-variant": "#682c00",
+                    "primary-fixed": "#ff9e66",
+                    "on-tertiary-fixed-variant": "#003c63",
+                    "primary-dim": "#8d4413",
+                    "inverse-primary": "#ff9e66",
+                    "surface-dim": "#e5e2dc",
+                    "outline": "#82807c",
+                    "primary-container": "#ff9e66",
+                    "on-primary-fixed": "#361300",
+                    "surface-bright": "#fffcf7",
+                    "on-background": "#383835",
+                    "on-surface": "#383835"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.editorial-grain {
+    position: relative
+    }
+.editorial-grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDRzbMMd78cBCDvzn_QXJxLXyKT5zgTTAIo51fp0bCOVQu9YHjxS2sHguIIzQkxQHwK-PEsuApUI2OdrsymYiq0tMDV184_MpMaZiiOSL_xpozpHfCbnKSI1txCdGFLT2V45S0evAb-xEQZKiIC3zJU-uYIUNVTeHRb7VvDf7i9V1Mja8ftY-HYuz-cjknflJBBN20AlK8-gbJ7BPnJbxANQ7d8VPgWh03csm9Z3wXovkMx1FbDXm__EoIOovPltxBQpvqRqm8az2Vv);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 1
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#fffcf7]/80 dark:bg-[#1a1c1e]/80 backdrop-blur-2xl">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-300 ease-out hover:opacity-70 transition-all text-[#383835]">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</button>
+<span class="text-2xl font-black text-[#9c4f1e] dark:text-[#ff9e66] tracking-tighter italic">Nexgen Learning</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[#383835] text-2xl hover:opacity-70 transition-all cursor-pointer">notifications</span>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover" data-alt="close-up portrait of a cheerful diverse student with a friendly expression and stylish glasses in soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA89btwuc5B8y1Gwc7vlp0uAZRoTf_HAyMiGhqH5auLdwazniBQYA8jE2HmR8N2FtGn_luNWTW-PDDRaCMmUIABcLWO2QeMndCFz5gWhsFeMkKgVBencYFkTDiR482bolmQJIxMbschgJspURyBU1brRe9wZnFn4e0kqsw-jLf31BhDRJ6nFSLW59MgBrhQafEXgHmsmw_KziRAbCkoj1JMOS3wNqQIb4U-8710LyQNofeUhTeGWTpSL_G6QheOVNS8jEG0ByPIc20F"/>
+</div>
+</div>
+</div>
+<div class="h-px w-full bg-gradient-to-r from-transparent via-[#9c4f1e]/10 to-transparent"></div>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-screen-xl mx-auto space-y-12">
+<!-- Hero Section: Course Header -->
+<section class="relative overflow-hidden rounded-xl bg-primary-container/10 p-8 md:p-12 editorial-grain">
+<div class="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+<div class="space-y-6">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary text-on-secondary text-xs font-bold tracking-widest uppercase">
+                        Creative Arts
+                    </div>
+<h1 class="text-5xl md:text-6xl font-black text-on-surface tracking-tight leading-tight">
+                        Editorial <br/> <span class="text-primary italic">Illustration</span> Mastery
+                    </h1>
+<p class="text-on-surface-variant text-lg leading-relaxed max-w-md">
+                        Master the art of storytelling through visual journalism. Learn to create evocative imagery that breathes life into digital and print editorial features.
+                    </p>
+<div class="flex flex-wrap gap-4 items-center pt-2">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.9</span>
+<span class="text-on-surface-variant">(1.2k reviews)</span>
+</div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-secondary">schedule</span>
+<span class="font-bold">12h 45m</span>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="aspect-video rounded-lg overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
+<img class="w-full h-full object-cover" data-alt="A sophisticated editorial illustration showing an artist sketching digitally with vibrant orange and purple color splashes and geometric patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-nKGtsz-OUJ7dqcFopHqR4YduE5OdhYgTfWxz63hRWiojHKzG6xz5zabHI7pSBouB7Dc9sy8TPdhSPSgliUHaoYvRPFvSMykYg92bYwpj5Xr5-sNA9wKXGgRFxzMNoFIAIqZZ4L3fmWmgZ1DGok0pUUP0IIFQoT2PAuWqKKPvEZQXK1n6UeqJEoH6-chtGX8wq9tcNj7P0OIEhl13uFPNAecMRgUGCtI27rKDvEDdKofCIdiTgz4ymUh1hHvtU_8-lLW5kNXGNw-G"/>
+</div>
+<!-- Decorative Doodles -->
+<span class="material-symbols-outlined absolute -top-8 -right-8 text-6xl text-secondary opacity-30 select-none" style="font-variation-settings: 'wght' 200;">auto_awesome</span>
+<span class="material-symbols-outlined absolute -bottom-6 -left-6 text-7xl text-primary opacity-20 select-none rotate-45" style="font-variation-settings: 'wght' 100;">ink_pen</span>
+</div>
+</div>
+</section>
+<div class="grid lg:grid-cols-3 gap-12">
+<!-- Left Column: Curriculum -->
+<div class="lg:col-span-2 space-y-10">
+<div class="space-y-4">
+<h2 class="text-3xl font-extrabold tracking-tight">Curriculum Breakdown</h2>
+<p class="text-on-surface-variant">4 Modules • 24 Lessons • Total 12.5 Hours</p>
+</div>
+<div class="space-y-6">
+<!-- Module 1 -->
+<div class="bg-surface-container-low rounded-lg p-6 space-y-4 border border-transparent hover:border-outline-variant/20 transition-all">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="w-10 h-10 flex items-center justify-center rounded-full bg-primary-container text-on-primary-container font-bold">01</span>
+<h3 class="text-xl font-bold">Foundation &amp; Composition</h3>
+</div>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+<div class="space-y-3 pl-14">
+<div class="flex justify-between items-center group">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">Visual Storytelling Basics</span>
+<div class="flex items-center gap-3">
+<span class="text-xs text-outline">15:00</span>
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="flex justify-between items-center group">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">The Editorial Grid System</span>
+<div class="flex items-center gap-3">
+<span class="text-xs text-outline">28:45</span>
+<span class="material-symbols-outlined text-outline-variant text-xl">play_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Module 2 -->
+<div class="bg-surface-container-low rounded-lg p-6 space-y-4 border border-transparent">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-container text-on-secondary-container font-bold">02</span>
+<h3 class="text-xl font-bold">Color Theory for Mood</h3>
+</div>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+<div class="space-y-3 pl-14">
+<div class="flex justify-between items-center group">
+<span class="text-on-surface-variant">Evocative Palettes</span>
+<div class="flex items-center gap-3">
+<span class="text-xs text-outline">42:10</span>
+<span class="material-symbols-outlined text-outline-variant text-xl">lock</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Module 3 -->
+<div class="bg-surface-container-low rounded-lg p-6 space-y-4 border border-transparent">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="w-10 h-10 flex items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container font-bold">03</span>
+<h3 class="text-xl font-bold">Textural Layering &amp; Grain</h3>
+</div>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Instructor Card -->
+<div class="bg-surface-container p-8 rounded-xl flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden">
+<div class="w-32 h-32 rounded-full overflow-hidden shrink-0 border-4 border-white shadow-xl relative z-10">
+<img alt="Instructor Profile" class="w-full h-full object-cover" data-alt="A professional artist in their late 30s with creative style, wearing an apron covered in subtle paint splatters, holding a digital stylus, studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm63dLZ34IM7n20lKTmIfrOECaQKbC7qK_tB0WLB6YDqphz6TSZgU0q5XaX1KAn9UMdh4qkJkLD3DnYGnFBxKyQ-Ixml9j4LCOYeKQrPRDMFtf2ayfD80ywGlNOTP01Ha3dDoFpIoGOv3rz_cPwZJnaF8kO0yrnafOQ-DNLuwRfoxqPccqCpflIZQ2nT4sl_LuanZukvxaTGyDDIZrCsTbnrly6HISwfmf9MZBiKg3EYVapaKUPQk9W38rA9agaUUz5RXr5XZeE5Tt"/>
+</div>
+<div class="space-y-4 relative z-10">
+<div class="space-y-1">
+<p class="text-primary font-bold text-sm tracking-widest uppercase">Lead Instructor</p>
+<h4 class="text-2xl font-black">Julianna Rivera</h4>
+</div>
+<p class="text-on-surface-variant leading-relaxed italic">
+                            "Art isn't just about what you see, but what you make others see. I've spent 15 years illustrating for The New Yorker and Wired, and now I'm here to show you the secrets of the craft."
+                        </p>
+<div class="flex gap-4">
+<span class="px-4 py-1.5 rounded-full bg-white text-xs font-bold border border-outline-variant/10 shadow-sm">15k Students</span>
+<span class="px-4 py-1.5 rounded-full bg-white text-xs font-bold border border-outline-variant/10 shadow-sm">Award-winning Artist</span>
+</div>
+</div>
+<!-- Decorative Background element -->
+<div class="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl"></div>
+</div>
+</div>
+<!-- Right Column: Enrollment Card -->
+<div class="lg:col-span-1">
+<div class="sticky top-32 space-y-6">
+<div class="bg-surface-bright rounded-xl shadow-[0_32px_64px_rgba(156,79,30,0.08)] p-8 space-y-8 border border-outline-variant/10 relative overflow-hidden">
+<div class="space-y-2">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-on-surface">$49.99</span>
+<span class="text-on-surface-variant line-through">$120.00</span>
+</div>
+<p class="text-error font-bold text-sm">Offer ends in 12 hours!</p>
+</div>
+<div class="space-y-4">
+<button class="w-full py-5 rounded-full bg-primary text-on-primary font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all active:scale-95 flex items-center justify-center gap-2">
+                                Enroll Now
+                                <span class="material-symbols-outlined">bolt</span>
+</button>
+<button class="w-full py-5 rounded-full bg-surface-container-highest text-on-surface font-bold text-lg hover:bg-surface-container-high transition-all active:scale-95">
+                                Add to Wishlist
+                            </button>
+</div>
+<div class="space-y-4 pt-4">
+<h5 class="font-bold text-sm uppercase tracking-widest text-on-surface-variant">Course Includes:</h5>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-secondary text-xl">verified_user</span>
+                                    Lifetime access to all materials
+                                </li>
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-secondary text-xl">download</span>
+                                    12 Downloadable resources
+                                </li>
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-secondary text-xl">workspace_premium</span>
+                                    Certificate of Completion
+                                </li>
+<li class="flex items-center gap-3 text-sm font-medium">
+<span class="material-symbols-outlined text-secondary text-xl">devices</span>
+                                    Access on mobile and desktop
+                                </li>
+</ul>
+</div>
+<div class="pt-6 text-center border-t border-outline-variant/10">
+<p class="text-xs text-on-surface-variant font-medium">30-Day Money-Back Guarantee</p>
+</div>
+<!-- Asymmetric Accent -->
+<div class="absolute -top-4 -right-4 w-12 h-12 bg-primary-container rounded-full opacity-20 blur-xl"></div>
+</div>
+<div class="bg-secondary-container/30 rounded-xl p-6 flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary text-3xl">lightbulb</span>
+<div>
+<p class="font-bold text-secondary">Pro Tip</p>
+<p class="text-sm text-on-secondary-container leading-relaxed">
+                                Join our Discord community after enrolling to get weekly live feedback from Julianna herself!
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Visible on Mobile) -->
+<nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 rounded-[40px] bg-[#fffcf7]/90 dark:bg-[#1a1c1e]/90 backdrop-blur-xl shadow-[0_20px_50px_rgba(156,79,30,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex justify-around items-center h-24 px-4">
+<div class="flex flex-col items-center justify-center text-[#383835]/60 dark:text-[#e6e2da]/60 px-4 hover:text-[#9c4f1e] dark:hover:text-[#ff9e66] transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Discover</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#ff9e66] dark:bg-[#9c4f1e] text-white dark:text-white rounded-full px-6 py-3 transition-all duration-500 shadow-lg shadow-[#ff9e66]/40 active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">My Learning</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#383835]/60 dark:text-[#e6e2da]/60 px-4 hover:text-[#9c4f1e] dark:hover:text-[#ff9e66] transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Achievements</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#383835]/60 dark:text-[#e6e2da]/60 px-4 hover:text-[#9c4f1e] dark:hover:text-[#ff9e66] transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.1em]">Profile</span>
+</div>
+</nav>
+</body></html>

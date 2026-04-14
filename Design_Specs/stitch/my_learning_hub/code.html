@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexgen Learning - My Learning Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#d8e2ff",
+                    "inverse-on-surface": "#edf0ff",
+                    "on-primary-container": "#d0beff",
+                    "on-secondary-fixed": "#2a0053",
+                    "secondary-fixed": "#eedbff",
+                    "background": "#faf8ff",
+                    "surface-variant": "#dfe2f1",
+                    "outline": "#7a7488",
+                    "surface-container": "#eaedfc",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#cfbdff",
+                    "primary-fixed": "#e8ddff",
+                    "on-tertiary-fixed-variant": "#004494",
+                    "on-tertiary-fixed": "#001a41",
+                    "secondary-fixed-dim": "#dab9ff",
+                    "tertiary-container": "#0050ad",
+                    "surface-dim": "#d6d9e8",
+                    "primary-fixed-dim": "#cfbdff",
+                    "outline-variant": "#cbc3d9",
+                    "surface-tint": "#6d23f9",
+                    "on-secondary-fixed-variant": "#5e289b",
+                    "on-surface": "#171b26",
+                    "surface-container-high": "#e5e7f6",
+                    "on-surface-variant": "#494456",
+                    "on-tertiary": "#ffffff",
+                    "inverse-surface": "#2c303b",
+                    "on-secondary-container": "#4d118b",
+                    "primary": "#4800b2",
+                    "primary-container": "#6200ee",
+                    "surface": "#faf8ff",
+                    "on-tertiary-container": "#afc8ff",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f1f3ff",
+                    "on-background": "#171b26",
+                    "on-primary-fixed-variant": "#5300cd",
+                    "tertiary": "#003a80",
+                    "secondary": "#7743b5",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#22005d",
+                    "secondary-container": "#bc87fe",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#adc6ff",
+                    "surface-container-highest": "#dfe2f1",
+                    "surface-bright": "#faf8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0 md:pt-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#faf8ff]/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover" data-alt="Professional student avatar portrait with warm lighting and soft background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeuMLgEPq1qeBKjeqdriUpRvjFNK20d8IblghWZa3HnHmfHpji6lYpnN0ji5Dj7snRuq5ylu_qwfhaWiMr0PCalqoz9XtypuzuO08Xd7z4fANGk5pWhby6fGkWa8rvyfuMB6kzm2RAk1jSpf3n0DaIc6Ht0sjQc66NbLP0aMtOhzfArvf6Ppv0VjH9g67qhnEjK4zVT_yNFRFHHuIwv_asG6ZFCEX4CKpgrIPH8DXEQ7-E1VcPtNqY3KPY7rjwjLvea27TK_jDBFvM"/>
+</div>
+<h1 class="text-xl font-bold text-[#4800b2] tracking-tighter">Nexgen Learning</h1>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-500 hover:opacity-80 transition-opacity" href="#">Discover</a>
+<a class="text-[#4800b2] font-semibold hover:opacity-80 transition-opacity" href="#">My Learning</a>
+<a class="text-slate-500 hover:opacity-80 transition-opacity" href="#">Achievements</a>
+<a class="text-slate-500 hover:opacity-80 transition-opacity" href="#">Profile</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-violet-700 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-8 md:py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Main Hub -->
+<div class="lg:col-span-8 space-y-12">
+<section>
+<header class="mb-8">
+<h2 class="text-4xl font-extrabold tracking-tight text-on-background">My Learning Hub</h2>
+<p class="text-on-surface-variant mt-2 text-lg">Pick up right where you left off, Alex.</p>
+</header>
+<!-- Active Courses List -->
+<div class="space-y-6">
+<!-- Course Card 1 -->
+<div class="bg-surface-container-lowest rounded-3xl p-6 flex flex-col md:flex-row gap-6 transition-all hover:bg-surface-container-low">
+<div class="w-full md:w-48 h-32 rounded-2xl overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Modern abstract 3D visualization of data structures with violet and cyan glowing accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoZ5EtR2YDLBaATvi3-1YwRckLGYpyEpff2OX5H6eG1IKU_tZbSaqYWjyb9CX3DoMCfT1QC5yXdUZ8hJTQuyWhVucm1OXijZ1lS3vg5JpeRUkjQybne6zpUCDyff-ut2MUp5JNBOIVsPRcYQfDhc544moGe8hM8EEjcDZ5FK7zPcbw9pGypQIs2B4bQuGuLu6FsBYxUAaOqYAjO2qPLzKAApggZfneMuFtwDqZpqAzRH40QrFEaH1Bqqnmu1fiQQiuJYUyjXJWiR_Z"/>
+</div>
+<div class="flex-grow flex flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Advanced React Patterns &amp; System Design</h3>
+<span class="text-xs font-semibold px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full uppercase tracking-wider">In Progress</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-1">Module 4: Composition vs Inheritance</p>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-medium text-on-surface-variant mb-2">
+<span>75% Complete</span>
+<span>12 / 16 Lessons</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%] rounded-full shadow-[0_0_8px_rgba(72,0,178,0.4)]"></div>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col justify-end md:justify-center">
+<button class="w-full md:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                                    Continue
+                                    <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Course Card 2 -->
+<div class="bg-surface-container-lowest rounded-3xl p-6 flex flex-col md:flex-row gap-6 transition-all hover:bg-surface-container-low">
+<div class="w-full md:w-48 h-32 rounded-2xl overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Futuristic data dashboard with glowing holographic charts and violet interface elements" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTg3hU50Vh2yBM1yunpYL5ll_PHkOC4M863SOCSwjRYu0a6_v81WUrl7RolHEbld18HTzGf7rf6zGkMjPX_zqscxGOuxZWG0IO4iqa9reL--448O_DCQYRvkxMQ8l8CIto8HPQUVRnB-VAx6cwvA-LuI2_QRj0TVzwWhGkIZ1rg5pl5vgDRRFGIve--SdRjXohGGAaHHNkyOa33_qfgChsWY5uMpIO5tuZ-W_DxrjbPbOAaZFLgoJf-FWdUFNoQUAFE_TVUZc7z-E7"/>
+</div>
+<div class="flex-grow flex flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Applied Machine Learning for Product Managers</h3>
+<span class="text-xs font-semibold px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-full uppercase tracking-wider">Paused</span>
+</div>
+<p class="text-on-surface-variant text-sm mt-1">Module 2: Predictive Modeling Fundamentals</p>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-medium text-on-surface-variant mb-2">
+<span>22% Complete</span>
+<span>4 / 18 Lessons</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[22%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col justify-end md:justify-center">
+<button class="w-full md:w-auto px-6 py-3 bg-surface-container-highest text-primary rounded-xl font-semibold text-sm hover:bg-surface-container-high transition-all flex items-center justify-center gap-2">
+                                    Resume
+                                    <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Certifications Section -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold tracking-tight text-on-background">Recently Completed</h2>
+<button class="text-primary font-semibold text-sm flex items-center gap-1 hover:underline">
+                            View All Certifications
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Cert Card 1 -->
+<div class="bg-surface-container-low border-transparent p-6 rounded-3xl flex items-start gap-4">
+<div class="w-12 h-12 bg-secondary-container/30 text-on-secondary-container flex items-center justify-center rounded-2xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">UI/UX Design Masterclass</h4>
+<p class="text-xs text-on-surface-variant mt-1 italic">Issued on Sep 12, 2023</p>
+<div class="mt-4 flex gap-2">
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                                        PDF
+                                    </button>
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">share</span>
+                                        Share
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Cert Card 2 -->
+<div class="bg-surface-container-low border-transparent p-6 rounded-3xl flex items-start gap-4">
+<div class="w-12 h-12 bg-secondary-container/30 text-on-secondary-container flex items-center justify-center rounded-2xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Clean Code &amp; TDD</h4>
+<p class="text-xs text-on-surface-variant mt-1 italic">Issued on Aug 05, 2023</p>
+<div class="mt-4 flex gap-2">
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                                        PDF
+                                    </button>
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">share</span>
+                                        Share
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Stats & Goals -->
+<aside class="lg:col-span-4 space-y-6">
+<!-- Learning Goal Card -->
+<div class="bg-primary bg-gradient-to-br from-primary to-primary-container p-8 rounded-[32px] text-on-primary">
+<h3 class="text-xl font-bold mb-4">Weekly Goal</h3>
+<div class="flex items-end justify-between mb-2">
+<span class="text-4xl font-extrabold">3.2<span class="text-lg font-normal opacity-70"> / 5h</span></span>
+<span class="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">On Track</span>
+</div>
+<div class="h-3 w-full bg-white/20 rounded-full mt-4">
+<div class="h-full bg-white rounded-full w-[64%]"></div>
+</div>
+<p class="mt-6 text-sm opacity-80 leading-relaxed">You're doing great! Just 1.8 hours more to hit your personal weekly milestone.</p>
+</div>
+<!-- Learning Schedule -->
+<div class="bg-surface-container-high rounded-[32px] p-6">
+<h3 class="text-lg font-bold text-on-surface mb-6">Upcoming Sessions</h3>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-14 bg-surface-container-lowest rounded-2xl flex flex-col items-center justify-center shadow-sm">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Oct</span>
+<span class="text-xl font-extrabold text-primary">24</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-on-surface">Group Study: ML Ethics</h4>
+<p class="text-xs text-on-surface-variant">4:00 PM • Live via Zoom</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-14 bg-surface-container-lowest rounded-2xl flex flex-col items-center justify-center shadow-sm">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Oct</span>
+<span class="text-xl font-extrabold text-primary">27</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-on-surface">1-on-1 Mentorship</h4>
+<p class="text-xs text-on-surface-variant">10:30 AM • Video Call</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-3 rounded-2xl border-2 border-primary/20 text-primary font-bold text-sm hover:bg-primary/5 transition-colors">
+                        View Full Calendar
+                    </button>
+</div>
+<!-- Instructor Spotlight -->
+<div class="bg-surface-container-lowest rounded-[32px] p-6 shadow-sm border border-outline-variant/10">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Instructor Spotlight</p>
+<div class="flex items-center gap-4 mb-4">
+<img class="w-14 h-14 rounded-2xl object-cover" data-alt="Professional woman instructor portrait, warm smiling expression, neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5g6Jz47VkfIv4LeChsB1mcZtmZbr1_GGsvXvIlaCxIi3cfSz3eSa8xM5-N6tiCkeU1gMgKEAbz4mnf1QOJTmYc2HRpnInJEOt8ksSQPkfiGKdK719GkGWSrDDN93hLoVb4lGyhbTQ_67bvnca1G6tmGSg5bxwbneQ_vT-iH8vpvXrKWFin0F99rR1o0W8u0foORtFIiGd6RnvVf0UF9H7eHmMp_JHVujTF7k-7y1pUxaYGF2e7zIwOVuKOycsNofpsA89xUu8sPZd"/>
+<div>
+<h4 class="font-bold text-on-surface">Sarah Chen</h4>
+<p class="text-xs text-on-surface-variant">Senior Design Lead @ Nexgen</p>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant italic">"Success in design isn't about the tools, it's about how you frame the problem."</p>
+</div>
+</aside>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-[32px] bg-[#faf8ff]/90 backdrop-blur-xl flex justify-around items-center h-20 px-4 pb-safe shadow-[0_-10px_40px_rgba(23,27,38,0.04)]">
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-violet-600 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#4800b2] relative after:content-[''] after:w-1 after:h-1 after:bg-[#4800b2] after:rounded-full after:mt-1" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">My Learning</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-violet-600 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Achievements</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-violet-600 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

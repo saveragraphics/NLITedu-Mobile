@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Sessions - Editorial Illustration Mastery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf8ff;
+        }
+        .headline-font {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .grainy-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        .pulse-red {
+            box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(186, 26, 26, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#6200ee",
+                      "primary-fixed": "#e8ddff",
+                      "tertiary": "#003a80",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#dab9ff",
+                      "outline-variant": "#cbc3d9",
+                      "tertiary-fixed-dim": "#adc6ff",
+                      "on-tertiary-fixed-variant": "#004494",
+                      "surface-tint": "#6d23f9",
+                      "surface-container-low": "#f1f3ff",
+                      "on-primary-fixed-variant": "#5300cd",
+                      "inverse-surface": "#2c303b",
+                      "surface-container": "#eaedfc",
+                      "on-surface": "#171b26",
+                      "on-primary-container": "#d0beff",
+                      "surface-bright": "#faf8ff",
+                      "inverse-on-surface": "#edf0ff",
+                      "secondary-fixed": "#eedbff",
+                      "secondary": "#7743b5",
+                      "surface-container-high": "#e5e7f6",
+                      "tertiary-container": "#0050ad",
+                      "on-primary-fixed": "#22005d",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#dfe2f1",
+                      "on-secondary-container": "#4d118b",
+                      "on-surface-variant": "#494456",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#cfbdff",
+                      "secondary-container": "#bc87fe",
+                      "on-tertiary-container": "#afc8ff",
+                      "on-background": "#171b26",
+                      "surface-dim": "#d6d9e8",
+                      "surface-container-highest": "#dfe2f1",
+                      "primary": "#4800b2",
+                      "on-secondary-fixed-variant": "#5e289b",
+                      "inverse-primary": "#cfbdff",
+                      "on-secondary-fixed": "#2a0053",
+                      "background": "#faf8ff",
+                      "on-tertiary-fixed": "#001a41",
+                      "tertiary-fixed": "#d8e2ff",
+                      "surface": "#faf8ff",
+                      "outline": "#7a7488"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Plus Jakarta Sans"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="Student profile avatar" class="w-full h-full object-cover" data-alt="professional headshot of a creative student with warm soft focus background and friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPMnQzLMMakuAQTmQz8q4i-k41ibu8P8NHkN7FCXY2pMEgyjaJIcS7Ujj6BJbnwbFt1TTvXj4___Sc3iva2qagX8JylIvJ7M-MFOCpCE3vmFI4l5sJTeaqs_iowcSFpOTn2rBJ_d5P88I1xeH-xVyhPEBMIUDiisqtdX-vZl57j-Apb4t_ISvaoUisD09uMtwS97uMq4f9u7J22WIj_DS1SpyqfpUvlCvuN8qlJzeSD6ilsQkMgtEAK4_0lGSSY-7V2RAvgt6GWcLk"/>
+</div>
+<h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-700 to-indigo-500 font-['Plus_Jakarta_Sans'] tracking-tight">Nexgen</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors text-violet-700 dark:text-violet-400 scale-95 active:duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-6 max-w-5xl mx-auto space-y-8">
+<!-- Live Now Banner -->
+<section class="relative overflow-hidden rounded-[2rem] p-8 shadow-[0_20px_40px_rgba(23,27,38,0.06)] bg-gradient-to-br from-primary to-secondary">
+<div class="absolute inset-0 grainy-texture"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full w-fit">
+<span class="w-2.5 h-2.5 rounded-full bg-error pulse-red"></span>
+<span class="text-white text-xs font-bold tracking-wider uppercase">Live Now</span>
+</div>
+<h2 class="headline-font text-3xl md:text-4xl font-extrabold text-white leading-tight">Mastering Texture &amp; Grain in Editorial Work</h2>
+<p class="text-white/80 max-w-md font-body">Join Professor Aris Thorne for a live demo on creating professional tactile textures using digital brushes.</p>
+</div>
+<button class="bg-white text-primary px-8 py-4 rounded-xl font-bold headline-font shadow-lg hover:scale-105 transition-transform active:scale-95">
+                    Join Room
+                </button>
+</div>
+<div class="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Scheduled & Recorded -->
+<div class="lg:col-span-2 space-y-10">
+<!-- Scheduled Sessions -->
+<section>
+<h3 class="headline-font text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="event">event</span>
+                        Scheduled Sessions
+                    </h3>
+<div class="space-y-4">
+<!-- Session Item 1 -->
+<div class="group bg-surface-container-lowest p-5 rounded-2xl flex items-center gap-6 hover:bg-surface-container transition-colors">
+<div class="flex-shrink-0 text-center space-y-1 bg-primary-fixed p-3 rounded-xl w-16">
+<span class="block text-xs font-bold text-primary uppercase">Oct</span>
+<span class="block text-xl font-extrabold text-primary">24</span>
+</div>
+<div class="flex-grow">
+<h4 class="headline-font font-bold text-lg group-hover:text-primary transition-colors">Compositional Flow for Long-form Articles</h4>
+<p class="text-on-surface-variant text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="schedule">schedule</span> 14:00 - 15:30 GMT
+                                </p>
+</div>
+<button class="p-2 text-primary hover:bg-primary/10 rounded-full">
+<span class="material-symbols-outlined" data-icon="calendar_add_on">calendar_add_on</span>
+</button>
+</div>
+<!-- Session Item 2 -->
+<div class="group bg-surface-container-lowest p-5 rounded-2xl flex items-center gap-6 hover:bg-surface-container transition-colors">
+<div class="flex-shrink-0 text-center space-y-1 bg-surface-container p-3 rounded-xl w-16">
+<span class="block text-xs font-bold text-on-surface-variant uppercase">Oct</span>
+<span class="block text-xl font-extrabold text-on-surface-variant">27</span>
+</div>
+<div class="flex-grow">
+<h4 class="headline-font font-bold text-lg group-hover:text-primary transition-colors">Color Theory in Modern Journalism</h4>
+<p class="text-on-surface-variant text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="schedule">schedule</span> 10:00 - 11:30 GMT
+                                </p>
+</div>
+<button class="p-2 text-primary hover:bg-primary/10 rounded-full">
+<span class="material-symbols-outlined" data-icon="calendar_add_on">calendar_add_on</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Recorded Lives -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h3 class="headline-font text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="history">history</span>
+                            Recorded Lives
+                        </h3>
+<a class="text-primary text-sm font-semibold hover:underline" href="#">View All Archive</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<!-- Recording Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden mb-3">
+<img alt="Recorded session thumbnail" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="abstract editorial illustration with flowing violet and indigo shapes on a grainy textured background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzbd7JcOlSDd4sOwPytikAlX2b4tNnqW5jtxe2GyEEzDvEX0Yue-QUNnZus_BfJ4wmjPJIw7I4A6qKS8BzESwIm2H5h85eHUKmQ2WG5mNMGXOd77jhVsXBM55Th5_8lWfHe7pQVqWkg6eC0i8OmEbyNy5L8FbMqNAI6NjEV4v3aYaXBamx1BgcHX2nQjJ1RkLXiGLy1WjY2M823p58pj4dxQsbPc99q2GmzLGsWSudrAYp8_VA8e5rdcEOAY8YWmexIUlFYwMV2MJH"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined fill-1" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] text-white font-bold">1:24:05</div>
+</div>
+<h4 class="headline-font font-bold group-hover:text-primary transition-colors">Week 2: Character Silhouettes</h4>
+<p class="text-on-surface-variant text-xs mt-1">Uploaded Oct 15, 2023 • 1.2k views</p>
+</div>
+<!-- Recording Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden mb-3">
+<img alt="Recorded session thumbnail" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vibrant digital art piece showing conceptual geometric shapes and soft painterly textures in a modern layout" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALQokEFwFmH0M4p6qfDiupxmBhEiDx3HTTX9QCxBLrP1IGswRzw3xPKpe02YIuLPrfPHI1hFFVYLwgjPPq-e4dbnQGdbjl3JQW1gvOCAr2tKK14KAdECDTmL9QqwEw4bfajInfzJYxolE-gFHc9WRJfTvX183_bXc_qx9jYhapTpoTYX3uhBOJg_pI26fWiwvihu9sjaJ8wrXrmkkw6s098Rv49_vl45W_FdRqLltYyNjjnvv4Q31kEfIjkj2arf6TOGlsFcApbmhO"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined fill-1" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] text-white font-bold">58:12</div>
+</div>
+<h4 class="headline-font font-bold group-hover:text-primary transition-colors">Week 1: Concept Ideation</h4>
+<p class="text-on-surface-variant text-xs mt-1">Uploaded Oct 08, 2023 • 2.4k views</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Community Snippet -->
+<aside class="space-y-6">
+<div class="bg-surface-container-high rounded-3xl p-6 h-full flex flex-col border border-outline-variant/15">
+<h3 class="headline-font text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="forum">forum</span>
+                        Live Chat
+                    </h3>
+<div class="flex-grow space-y-4 overflow-y-auto mb-6 max-h-[400px] pr-2">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex-shrink-0 overflow-hidden">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="close-up of a smiling young designer with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB40MJC2I2IJRvOkYUWLhx0bVSxjvv9AIEMvcLukghYvu3HTrz7zdU8L6sSifCUm7LLF8weSYt2t0kHUKdm-4arTDd6e2DDZ0-khUDY3ESRzluYuNsSqVpiDvSxvG__PjcVXUCDyily7ZKAf_vUXAOptyhsVQA8IM_meisdjrF7z9iVCXGBjCzKlAbKX-G2ZqgEInphxsdZH2mgXthcZleqer8XE5TYoL_HkLYBVZJ5fO3sa383Jy_yQd6KEI5Si2yBVnya70qlUslQ"/>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-2xl rounded-tl-none shadow-sm">
+<p class="text-[10px] font-bold text-secondary mb-1">Marcus L.</p>
+<p class="text-xs text-on-surface">The way she layers the blend modes is actual magic. 🪄</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex-shrink-0 overflow-hidden">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="portrait of a young woman artist in a studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNqu9eIMl9SLTQNY7HY4EeXUvbgoLXoLJ-nrbMmsQLM_V8dodd7PInNVBJ4rhkXNRJn5yOPez-G_-heqP5QVZyRBo2TNYm6q9FfQuFk3w183ZCcKKZDlfDUhqMsNcGmcFdWlEUGm-jHLBm-jC0ezjZZDvgkOWmfqIu90mMqZNrFRY_bc-VdDiKsSpgOwrUW500Sp1JK7_TnP-VLiwyruYMC2fGSJkJLVBs7etVQXWRVYxMtOCN69matDnXpW7CVO0uKuK-tHvMtaQ_"/>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-2xl rounded-tl-none shadow-sm border-l-4 border-primary">
+<p class="text-[10px] font-bold text-primary mb-1">Sara Kim</p>
+<p class="text-xs text-on-surface">Is there a specific brush set we should use for this exercise?</p>
+</div>
+</div>
+<div class="flex gap-3 flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0 flex items-center justify-center">
+<span class="text-[10px] font-bold">YOU</span>
+</div>
+<div class="bg-primary text-white p-3 rounded-2xl rounded-tr-none shadow-md">
+<p class="text-xs">She mentioned the 'Vanguard' set in the intro! Check the resources tab.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex-shrink-0 overflow-hidden">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="man with a friendly smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBiVYKtxuRftmrhP1mDjBCFlzzfrOPxy4A2vcyDJEo5or0Tt0x2GScEMEgsQUdsvz7Su6eLLJhQYUAeCOe_sW81ERBMD64Ndgmt2wfXlu7Gohv_JdS9M6p_GrEudZPY4CCjlZAkKvoM_fDuayvWn8pBKjF5Py6GuRfq9qIx_d8M4bE5qmbr0IopHLP_kZZZDoKbIvZCsZ8rCX5plV3XYOuoy8SRCOjosbNIGWVRBxyvWo22R-7pwpzfC_t6b4kkmHUaff6I26cymn5"/>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-2xl rounded-tl-none shadow-sm">
+<p class="text-[10px] font-bold text-tertiary mb-1">Devon S.</p>
+<p class="text-xs text-on-surface">Thanks Sarah! Found them. 🎨</p>
+</div>
+</div>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/50" placeholder="Say something..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-0 w-full z-50 flex justify-around items-center px-4">
+<div class="bg-white dark:bg-slate-900 w-[90%] max-w-md rounded-3xl shadow-[0_20px_40px_rgba(23,27,38,0.06)] flex justify-around items-center px-4 py-3">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 dark:hover:text-violet-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 rounded-2xl px-4 py-2 transition-all duration-300 font-['Inter'] text-[11px] font-semibold" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="menu_book">menu_book</span>
+<span>My Learning</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 dark:hover:text-violet-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="emoji_events">emoji_events</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Achievements</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 dark:hover:text-violet-300 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

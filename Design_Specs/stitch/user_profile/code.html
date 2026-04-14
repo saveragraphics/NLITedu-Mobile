@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#6200ee",
+                    "primary-fixed": "#e8ddff",
+                    "tertiary": "#003a80",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#dab9ff",
+                    "outline-variant": "#cbc3d9",
+                    "tertiary-fixed-dim": "#adc6ff",
+                    "on-tertiary-fixed-variant": "#004494",
+                    "surface-tint": "#6d23f9",
+                    "surface-container-low": "#f1f3ff",
+                    "on-primary-fixed-variant": "#5300cd",
+                    "inverse-surface": "#2c303b",
+                    "surface-container": "#eaedfc",
+                    "on-surface": "#171b26",
+                    "on-primary-container": "#d0beff",
+                    "surface-bright": "#faf8ff",
+                    "inverse-on-surface": "#edf0ff",
+                    "secondary-fixed": "#eedbff",
+                    "secondary": "#7743b5",
+                    "surface-container-high": "#e5e7f6",
+                    "tertiary-container": "#0050ad",
+                    "on-primary-fixed": "#22005d",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#dfe2f1",
+                    "on-secondary-container": "#4d118b",
+                    "on-surface-variant": "#494456",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#cfbdff",
+                    "secondary-container": "#bc87fe",
+                    "on-tertiary-container": "#afc8ff",
+                    "on-background": "#171b26",
+                    "surface-dim": "#d6d9e8",
+                    "surface-container-highest": "#dfe2f1",
+                    "primary": "#4800b2",
+                    "on-secondary-fixed-variant": "#5e289b",
+                    "inverse-primary": "#cfbdff",
+                    "on-secondary-fixed": "#2a0053",
+                    "background": "#faf8ff",
+                    "on-tertiary-fixed": "#001a41",
+                    "tertiary-fixed": "#d8e2ff",
+                    "surface": "#faf8ff",
+                    "outline": "#7a7488"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.grainy-bg {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCsusLe8E6U9I__l4ViIRR_0bRzNn7OCCcH95oXe7KClGCqL4fKHfvGDK-dip2uHvSAJKrD55ih56A_8rGeLfzL66MxwTUc1VEghXNz8dCT_Ua31aoVYJc1_yl7zLYEXkEBWgueNxipuXU0OseMClmmRVBHgXp3BeBoqXtKHkZgzdEyZZN-WneNespRGFHoJtUvuMWVpEXSLzSSanUwnD9g1OJzoX6qwYzjBpoeMyfErdKagyiArRY1wfO6AXaTBA1PWn_uESja60M0);
+    background-blend-mode: soft-light
+    }
+.aurora-gradient {
+    background: linear-gradient(135deg, #4800b2 0%, #bc87fe 50%, #f1f3ff 100%)
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopAppBar Navigation -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full no-border tonal-shift">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="Student profile avatar" class="w-full h-full object-cover" data-alt="portrait of a young man with a friendly expression, soft lighting, clean studio background, professional and modern" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_Y9aiVEurcWxxE_2P5BtFUTWNFHxbZqjFpHE7qmNwD4QhEUI7xepDfm1lxz64rgJG8PgsQWCVb75esYc_TpCcjW9vY_YHUUGpVxag_O1ZThu25RQdYwlA4WKB4__9_N9PMB3-oAuj28vjiFwSTORKIpJgI2pGbrWk-LH0JIjvo5lcgSwbohIYV2qHpwR6_kfRbgi7fkNA5GmcCI16u3uTu_AHo7PrNw1eH2Y2Y7kRIXTMcSp9NeLI9s4mmzDM8A7QXFgXv29Vx8M4"/>
+</div>
+<h1 class="text-2xl font-['Plus_Jakarta_Sans'] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-700 to-indigo-500 tracking-tight">Nexgen</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-slate-100/50 transition-colors scale-95 active:duration-150">
+<span class="material-symbols-outlined text-violet-700">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto space-y-12">
+<!-- Profile Hero Section -->
+<section class="flex flex-col items-center text-center space-y-6">
+<div class="relative group">
+<div class="absolute -inset-1.5 bg-gradient-to-tr from-secondary to-primary rounded-full blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
+<div class="relative w-40 h-40 rounded-full p-1.5 bg-surface-container-lowest">
+<div class="w-full h-full rounded-full overflow-hidden border-4 border-surface-container">
+<img alt="Alex Chen Profile Photo" class="w-full h-full object-cover" data-alt="close-up portrait of Alex Chen, young professional, confident smile, natural daylight, soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0cXbwg3MlFrnb4Qi6_Qd_fNxOVKZWVJFA5RdQ_F4ObVYGkQAHy13tOxWXbBGaeaz6op8XVWROUVfjO4ky0j9NlSaLMvr6xtGnuwlqj4iqNvYsLYE6BIPUTODrlNQNdmIB9b16APUHhcVFUPOtr7-RfoZLaZU9rjQJ0mks05BlP4gtKO2b3Rjwg1n6dFX8Yrgq36pE68IAvEpDKu_UXIUC3EQ7V6Qz95OPJSmiKKCGVyHIcsUUZlwimtvhPuEr6Dcz2aA-DG_o7O2i"/>
+</div>
+</div>
+<div class="absolute bottom-1 right-2 bg-primary text-on-primary rounded-full p-2 shadow-lg">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="space-y-2">
+<h2 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface">Alex Chen</h2>
+<div class="inline-flex items-center px-4 py-1.5 rounded-full bg-secondary-container/20 text-secondary text-sm font-semibold tracking-wide">
+<span class="material-symbols-outlined text-sm mr-2" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                    Member since Oct 2023
+                </div>
+</div>
+</section>
+<!-- Stats Grid: Bento Style -->
+<section class="space-y-6">
+<h3 class="text-xl font-headline font-bold text-on-surface-variant px-1">My Stats</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Hours Card -->
+<div class="relative overflow-hidden group bg-surface-container-lowest rounded-[2rem] p-8 flex flex-col justify-between min-h-[220px] transition-all hover:bg-surface-container-low">
+<div class="absolute top-0 right-0 w-32 h-32 aurora-gradient opacity-10 rounded-bl-full grainy-bg"></div>
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+<p class="text-on-surface-variant font-medium">Hours Learned</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-headline font-extrabold text-on-surface">124</span>
+<span class="text-on-surface-variant font-semibold">hrs</span>
+</div>
+</div>
+<!-- Skills Card -->
+<div class="relative overflow-hidden group bg-surface-container-lowest rounded-[2rem] p-8 flex flex-col justify-between min-h-[220px] transition-all hover:bg-surface-container-low">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/20 opacity-30 rounded-bl-full grainy-bg"></div>
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<p class="text-on-surface-variant font-medium">Skills Mastered</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-headline font-extrabold text-on-surface">12</span>
+<span class="text-on-surface-variant font-semibold">topics</span>
+</div>
+</div>
+<!-- Streak Card (Asymmetric addition) -->
+<div class="md:col-span-2 lg:col-span-1 relative overflow-hidden group bg-primary text-on-primary rounded-[2rem] p-8 flex flex-col justify-between min-h-[220px] grainy-bg">
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<p class="text-primary-fixed-dim font-medium">Current Streak</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-headline font-extrabold text-white">18</span>
+<span class="text-primary-fixed-dim font-semibold">days</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Subscription -->
+<section class="space-y-6">
+<h3 class="text-xl font-headline font-bold text-on-surface-variant px-1">Active Subscriptions</h3>
+<div class="relative p-1 rounded-[2.5rem] bg-gradient-to-r from-primary via-secondary to-primary-container">
+<div class="bg-surface-container-lowest rounded-[2.3rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="flex items-center gap-6">
+<div class="w-20 h-20 rounded-3xl aurora-gradient flex items-center justify-center text-white shadow-xl shadow-primary/20 grainy-bg">
+<span class="material-symbols-outlined text-4xl">star</span>
+</div>
+<div>
+<h4 class="text-2xl font-headline font-extrabold text-on-surface">Pro Learner Plan</h4>
+<p class="text-on-surface-variant">Renewal on Nov 24, 2024</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+<button class="px-8 py-3 rounded-xl bg-surface-container-high text-primary font-bold hover:bg-surface-container transition-colors">Manage</button>
+<button class="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">Upgrade</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Settings List -->
+<section class="space-y-6">
+<h3 class="text-xl font-headline font-bold text-on-surface-variant px-1">Settings</h3>
+<div class="bg-surface-container-lowest rounded-[2rem] overflow-hidden">
+<div class="divide-y divide-outline-variant/10">
+<!-- Notification -->
+<button class="w-full flex items-center justify-between p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-bold text-on-surface">Notifications</span>
+<span class="text-sm text-on-surface-variant">Alerts, updates, and learning reminders</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Security -->
+<button class="w-full flex items-center justify-between p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">shield_person</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-bold text-on-surface">Security</span>
+<span class="text-sm text-on-surface-variant">Password, 2FA, and account privacy</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Help -->
+<button class="w-full flex items-center justify-between p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_center</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-bold text-on-surface">Help &amp; Support</span>
+<span class="text-sm text-on-surface-variant">FAQs, contact us, and documentation</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Logout -->
+<button class="w-full flex items-center justify-between p-6 hover:bg-error-container/10 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">logout</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-bold text-error">Log Out</span>
+<span class="text-sm text-on-surface-variant">Sign out of your session securely</span>
+</div>
+</div>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Navigation -->
+<nav class="fixed bottom-6 left-0 w-full z-50 flex justify-around items-center px-4">
+<div class="bg-white dark:bg-slate-900 w-[90%] max-w-md rounded-3xl flex justify-around items-center px-4 py-3 shadow-[0_20px_40px_rgba(23,27,38,0.06)] no-line tonal-depth">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1">menu_book</span>
+<span class="font-['Inter'] text-[11px] font-semibold">My Learning</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-2 hover:text-violet-600 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1">emoji_events</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Achievements</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 rounded-2xl px-4 py-2 transition-all duration-300" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-['Inter'] text-[11px] font-semibold">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>
