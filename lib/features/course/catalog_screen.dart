@@ -1,62 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../models/course.dart';
+import '../../providers/course_provider.dart';
 
 /// Stitch 01 Course Catalog
-class CatalogScreen extends StatefulWidget {
+class CatalogScreen extends ConsumerStatefulWidget {
   const CatalogScreen({super.key});
 
   @override
-  State<CatalogScreen> createState() => _CatalogScreenState();
+  ConsumerState<CatalogScreen> createState() => _CatalogScreenState();
 }
 
-class _CatalogScreenState extends State<CatalogScreen> {
+class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   final List<String> _filters = ["All Courses", "Development", "Design", "Business", "Data Science", "Marketing"];
   int _selectedFilter = 0;
 
-  static const List<Map<String, dynamic>> _allCourses = [
-    {
-      'title': 'Advanced React Architecture: Scalable Patterns',
-      'category': 'DEVELOPMENT',
-      'categoryColor': AppTheme.primary,
-      'duration': '14.5 Hours',
-      'level': 'Advanced',
-      'rating': 4.9,
-      'price': '\$89.00',
-      'description': 'Master performance optimization, clean code principles, and state management in large-scale React applications.',
-      'image': 'https://othxceezbpfiauaevibt.supabase.co/storage/v1/object/public/course-thumbnails/microservices.png',
-      'slug': 'advanced-react',
-    },
-    {
-      'title': 'Python for Machine Learning Mastery',
-      'category': 'DATA SCIENCE',
-      'categoryColor': Color(0xFF7743B5), // secondary
-      'duration': '22 Hours',
-      'level': 'Intermediate',
-      'rating': 4.8,
-      'price': '\$124.00',
-      'description': 'Go from zero to hero in ML. Learn Scikit-Learn, TensorFlow, and building real-world predictive models.',
-      'image': 'https://othxceezbpfiauaevibt.supabase.co/storage/v1/object/public/course-thumbnails/python.png',
-      'slug': 'python-ml',
-    },
-    {
-      'title': 'Strategic Product Management',
-      'category': 'BUSINESS',
-      'categoryColor': Color(0xFF003A80), // tertiary
-      'duration': '8 Hours',
-      'level': 'Beginner',
-      'rating': 4.7,
-      'price': '\$59.00',
-      'description': 'Learn how to build products that customers love and dominate the market with expert frameworks.',
-      'image': 'https://othxceezbpfiauaevibt.supabase.co/storage/v1/object/public/course-thumbnails/uiux.jpg',
-      'slug': 'strategic-product',
-    },
-  ];
+  List<Course> _filteredCourses = [];
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize will be handled in build or didChangeDependencies if logic was complex, 
+    // but here we can just compute it in build for simplicity since it's a static list.
+  }
 
   @override
   Widget build(BuildContext context) {
+    final allCourses = ref.watch(courseProvider);
+    
+    // Filtering logic
+    final invitedFilter = _filters[_selectedFilter].toUpperCase();
+    final filteredCourses = allCourses.where((course) {
+      final matchesFilter = _selectedFilter == 0 || course.category == invitedFilter || 
+                            (_selectedFilter == 1 && course.category == "PROGRAMMING") ||
+                            (_selectedFilter == 2 && course.category == "DESIGN") ||
+                            (_selectedFilter == 3 && course.category == "BUSINESS") ||
+                            (_selectedFilter == 4 && course.category == "DATA SCIENCE") ||
+                            (_selectedFilter == 5 && course.category == "MARKETING");
+                            
+      final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                            course.description.toLowerCase().contains(_searchQuery.toLowerCase());
+      
+      return matchesFilter && matchesSearch;
+    }).toList();
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       body: SafeArea(
@@ -115,20 +107,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
             // Course List
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: _buildCourseCard(context, _allCourses[index]),
-                    );
-                  },
-                  childCount: _allCourses.length,
+            if (filteredCourses.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(LucideIcons.searchX, size: 48, color: AppTheme.outline.withOpacity(0.5)),
+                        const SizedBox(height: 16),
+                        Text("No courses found", style: GoogleFonts.inter(color: AppTheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: _buildCourseCard(context, filteredCourses[index]),
+                      );
+                    },
+                    childCount: filteredCourses.length,
+                  ),
                 ),
               ),
-            ),
             // Daily Spotlight
             SliverToBoxAdapter(
               child: Padding(
@@ -149,6 +157,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: TextField(
+        onChanged: (value) => setState(() => _searchQuery = value),
         style: GoogleFonts.inter(fontSize: 16, color: AppTheme.onSurface),
         decoration: InputDecoration(
           hintText: "Search for courses, skills, or mentors...",
@@ -181,9 +190,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, Map<String, dynamic> course) {
+  Widget _buildCourseCard(BuildContext context, Course course) {
     return GestureDetector(
-      onTap: () => context.push('/course/${course['slug']}', extra: course),
+      onTap: () => context.push('/course/${course.slug}', extra: course),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -210,12 +219,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               child: Hero(
-                tag: 'hero_discover_${course['slug']}',
+                tag: 'hero_discover_${course.slug}',
                 child: Image.network(
-                  course['image'], 
-                  fit: BoxFit.cover,
+                  course.imageUrl, 
+                  fit: BoxFit.contain, // Match website's object-contain
                   errorBuilder: (context, error, stackTrace) {
-                     return Image.network('https://via.placeholder.com/600x400?text=Course');
+                     return Center(
+                       child: Column(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           const Icon(LucideIcons.image, color: AppTheme.outline),
+                           const SizedBox(height: 8),
+                           Text("Thumbnail", style: GoogleFonts.inter(fontSize: 12, color: AppTheme.outline)),
+                         ],
+                       ),
+                     );
                   },
                 ),
               ),
@@ -226,11 +244,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  course['category'],
+                  course.category,
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: course['categoryColor'],
+                    color: course.categoryColor,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -245,7 +263,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     children: [
                       const Icon(Icons.star_rounded, size: 16, color: Color(0xFFFBBF24)),
                       const SizedBox(width: 4),
-                      Text("\${course['rating']}", style: GoogleFonts.inter(
+                      Text("${course.rating}", style: GoogleFonts.inter(
                         fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.onSurface)),
                     ],
                   ),
@@ -255,7 +273,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             const SizedBox(height: 12),
             // Title
             Text(
-              course['title'], 
+              course.title, 
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 18, 
                 fontWeight: FontWeight.w800, 
@@ -266,7 +284,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             const SizedBox(height: 8),
             // Description
             Text(
-              course['description'],
+              course.description,
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -286,16 +304,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   children: [
                     const Icon(LucideIcons.clock, size: 14, color: AppTheme.outline),
                     const SizedBox(width: 4),
-                    Text(course['duration'], style: GoogleFonts.inter(
+                    Text(course.duration, style: GoogleFonts.inter(
                       fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.onSurfaceVariant)),
                     const SizedBox(width: 16),
                     const Icon(LucideIcons.barChart2, size: 14, color: AppTheme.outline),
                     const SizedBox(width: 4),
-                    Text(course['level'], style: GoogleFonts.inter(
+                    Text(course.level, style: GoogleFonts.inter(
                       fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.onSurfaceVariant)),
                   ],
                 ),
-                Text(course['price'], style: GoogleFonts.plusJakartaSans(
+                Text(course.price, style: GoogleFonts.plusJakartaSans(
                   fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.onSurface)),
               ],
             ),

@@ -3,12 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../models/course.dart';
 
 /// Immersive Course Details Screen matching the provided Figma screenshot
 class CourseDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> courseData;
+  final Course course;
 
-  const CourseDetailsScreen({super.key, required this.courseData});
+  const CourseDetailsScreen({super.key, required this.course});
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +51,8 @@ class CourseDetailsScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
               Hero(
-                tag: 'hero_${courseData['slug']}',
-                child: Image.network(courseData['image'], fit: BoxFit.contain, height: 260),
+                tag: 'hero_discover_${course.slug}',
+                child: Image.network(course.imageUrl, fit: BoxFit.contain, height: 260),
               ),
             ],
           ),
@@ -108,7 +109,7 @@ class CourseDetailsScreen extends StatelessWidget {
                   fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.5)),
               ),
               const SizedBox(height: 16),
-              Text(courseData['title'], style: GoogleFonts.plusJakartaSans(
+              Text(course.title, style: GoogleFonts.plusJakartaSans(
                 fontSize: 38, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1, letterSpacing: -1)),
             ],
           ),
@@ -152,7 +153,7 @@ class CourseDetailsScreen extends StatelessWidget {
             children: [
               const Icon(LucideIcons.star, size: 18, color: Color(0xFFFBBF24)),
               const SizedBox(width: 6),
-              Text("${courseData['rating']}", style: GoogleFonts.inter(
+              Text("${course.rating}", style: GoogleFonts.inter(
                 fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.onSurface)),
               const SizedBox(width: 4),
               Text("(2.4k reviews)", style: GoogleFonts.inter(
@@ -174,7 +175,7 @@ class CourseDetailsScreen extends StatelessWidget {
             fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.onSurface)),
           const SizedBox(height: 16),
           Text(
-            "Learn how to design, build, and deploy high-scale systems using modern patterns and tools. This course covers everything from basic fundamentals to event-driven architectures and orchestration.",
+            course.description,
             style: GoogleFonts.inter(fontSize: 15, color: AppTheme.onSurfaceVariant, height: 1.6),
           ),
         ],
@@ -204,7 +205,7 @@ class CourseDetailsScreen extends StatelessWidget {
               Text("Full Lifetime Access", style: GoogleFonts.inter(
                 fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.outline)),
               const SizedBox(height: 2),
-              Text("\$49.99", style: GoogleFonts.plusJakartaSans(
+              Text(course.price, style: GoogleFonts.plusJakartaSans(
                 fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.onSurface)),
             ],
           ),

@@ -12,6 +12,7 @@ import '../features/profile/personal_info_screen.dart';
 import '../features/profile/notifications_settings_screen.dart';
 import '../features/profile/security_screen.dart';
 import '../features/profile/privacy_policy_screen.dart';
+import '../models/course.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -46,21 +47,22 @@ final router = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final slug = state.pathParameters['slug']!;
-        // We will pass the full mock data list from Catalog/Dashboard or map it here.
-        // For simplicity we just recreate a mock stub if needed, or pass it in State 'extra'.
-        // In this implementation, since details map isn't deeply fetched from Supabase yet,
-        // we map basic metadata for the UI layout.
-        final extraData = state.extra as Map<String, dynamic>? ?? {};
         
-        // Ensure minimum data fields exist to draw the immersive screen without crashing
-        final safeData = {
-          'slug': slug,
-          'title': extraData['title'] ?? 'Mastering $slug',
-          'image': extraData['image'] ?? 'https://via.placeholder.com/600x400',
-          'rating': extraData['rating'] ?? 4.9,
-          'category': extraData['category'] ?? 'GENERAL',
-        };
-        return CourseDetailsScreen(courseData: safeData);
+        if (state.extra is Course) {
+          return CourseDetailsScreen(course: state.extra as Course);
+        }
+
+        // Fallback or stub if extra is missing (e.g. direct link)
+        final fallbackCourse = Course(
+          title: 'Mastering $slug',
+          description: 'Dive deep into $slug and master professional skills with our industry-led path.',
+          imageUrl: 'https://via.placeholder.com/600x400?text=$slug',
+          slug: slug,
+          category: 'GENERAL',
+          categoryColor: Colors.grey,
+        );
+        
+        return CourseDetailsScreen(course: fallbackCourse);
       },
     ),
     ShellRoute(
