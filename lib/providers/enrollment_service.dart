@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/course.dart';
+import 'course_provider.dart';
 
 class EnrollmentService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -161,4 +163,18 @@ final userEnrollmentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref)
   if (user == null) return [];
   
   return ref.read(enrollmentServiceProvider).getUserEnrollments(user.email!);
+});
+
+/// A provider that maps simple enrollment records to full Course objects for valid UI rendering
+final enrolledFullCoursesProvider = FutureProvider<List<Course>>((ref) async {
+  final enrollments = await ref.watch(userEnrollmentsProvider.future);
+  final allCourses = ref.watch(courseProvider);
+  
+  if (enrollments.isEmpty) return [];
+
+  // Extract titles from enrollments
+  final enrolledTitles = enrollments.map((e) => e['course'] as String).toSet();
+  
+  // Map back to Course objects
+  return allCourses.where((c) => enrolledTitles.contains(c.title)).toList();
 });

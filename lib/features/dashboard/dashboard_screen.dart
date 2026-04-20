@@ -7,6 +7,9 @@ import '../../core/theme.dart';
 import '../profile/profile_provider.dart';
 import '../../models/course.dart';
 import '../../providers/course_provider.dart';
+import '../../providers/live_provider.dart';
+import '../../models/live_session.dart';
+import '../../providers/enrollment_service.dart';
 
 /// Stitch 01 Dashboard — Enhanced Discover with Hero Section
 class DashboardScreen extends ConsumerWidget {
@@ -20,6 +23,10 @@ class DashboardScreen extends ConsumerWidget {
 
     // Safe top padding for glass nav bar overlap
     final topNavHeight = MediaQuery.of(context).padding.top + 72;
+
+    // Watch for live sessions
+    final liveSessionsAsync = ref.watch(activeLiveSessionsProvider);
+    final userEnrollmentsAsync = ref.watch(userEnrollmentsProvider);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -120,6 +127,35 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
 
+          // ──── Live Session Banner ────
+          liveSessionsAsync.when(
+            data: (sessions) {
+              if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+              
+              // Filter sessions for matching user enrollments
+              return userEnrollmentsAsync.when(
+                data: (enrollments) {
+                  final activeForUser = sessions.where((s) => 
+                    enrollments.any((e) => e['course_title'] == s.courseTitle)
+                  ).toList();
+
+                  if (activeForUser.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      child: _buildLiveBanner(context, activeForUser.first),
+                    ),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              );
+            },
+            loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+            error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+          ),
+
           // ──── Profile Stats Grid ────
           SliverToBoxAdapter(
             child: Padding(
@@ -187,13 +223,64 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _heroStat(String value, String label) {
+  Widget _heroStat(String val, String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-        Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.6))),
+        Text(val, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.white.withOpacity(0.6), fontWeight: FontWeight.w500)),
       ],
+    );
+  }
+
+  Widget _buildLiveBanner(BuildContext context, LiveSession session) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.red.shade200, width: 2),
+        boxShadow: [
+          BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(14)),
+            child: const Icon(LucideIcons.video, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text("LIVE NOW", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+                    const SizedBox(width: 6),
+                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                  ],
+                ),
+                Text(session.courseTitle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 16)),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => context.push('/live-session', extra: session),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: const Text("Join Class", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 

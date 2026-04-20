@@ -201,6 +201,8 @@ class CourseDetailsScreen extends ConsumerWidget {
 
   Widget _buildInstructorRow(BuildContext context) {
     final theme = Theme.of(context);
+    final isAsset = course.instructorImage.startsWith('assets/');
+    
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Container(
@@ -216,7 +218,12 @@ class CourseDetailsScreen extends ConsumerWidget {
               width: 56, height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(image: NetworkImage(course.instructorImage), fit: BoxFit.cover),
+                image: DecorationImage(
+                  image: isAsset 
+                    ? AssetImage(course.instructorImage) as ImageProvider
+                    : NetworkImage(course.instructorImage), 
+                  fit: BoxFit.cover
+                ),
                 border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2), width: 2),
               ),
             ),
@@ -225,9 +232,9 @@ class CourseDetailsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Instructor", style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurfaceVariant)),
+                  Text("Official Partner", style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 2),
-                  Text(course.instructorName, style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+                  Text("NLITedu Official", style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
                 ],
               ),
             ),
@@ -241,7 +248,7 @@ class CourseDetailsScreen extends ConsumerWidget {
                     Text("${course.rating}", style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
                   ],
                 ),
-                Text("${course.totalReviews} Reviews", style: GoogleFonts.inter(fontSize: 11, color: theme.colorScheme.onSurfaceVariant)),
+                Text("Verified", style: GoogleFonts.inter(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold)),
               ],
             ),
           ],
@@ -249,6 +256,7 @@ class CourseDetailsScreen extends ConsumerWidget {
       ),
     );
   }
+
 
   Widget _buildAboutSection(BuildContext context) {
     final theme = Theme.of(context);

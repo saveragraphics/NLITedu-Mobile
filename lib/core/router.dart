@@ -8,6 +8,7 @@ import '../features/course/catalog_screen.dart';
 import '../features/course/course_details_screen.dart';
 import '../features/course/enrollment_form_screen.dart';
 import '../features/dashboard/learning_hub_screen.dart';
+import '../features/dashboard/course_content_view.dart';
 import '../features/dashboard/achievement_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/personal_info_screen.dart';
@@ -16,6 +17,8 @@ import '../features/profile/security_screen.dart';
 import '../features/profile/privacy_policy_screen.dart';
 import '../features/profile/terms_and_conditions_screen.dart';
 import '../models/course.dart';
+import '../models/live_session.dart';
+import '../features/course/live_class_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -78,6 +81,16 @@ final router = GoRouter(
         return const Scaffold(body: Center(child: Text('Course data missing')));
       },
     ),
+    GoRoute(
+      path: '/live-session',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        if (state.extra is LiveSession) {
+          return LiveClassScreen(session: state.extra as LiveSession);
+        }
+        return const Scaffold(body: Center(child: Text('Session data missing')));
+      },
+    ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
@@ -99,6 +112,17 @@ final router = GoRouter(
         GoRoute(
           path: '/learning-hub',
           builder: (context, state) => const LearningHubScreen(),
+          routes: [
+            GoRoute(
+              path: 'view',
+              builder: (context, state) {
+                if (state.extra is Course) {
+                  return CourseContentView(course: state.extra as Course);
+                }
+                return const Scaffold(body: Center(child: Text('Course data missing')));
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: '/profile',
