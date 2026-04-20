@@ -11,6 +11,12 @@ class Course {
   final String level;
   final double rating;
   final String price;
+  final List<String> highlights;
+  final String instructorName;
+  final String instructorImage;
+  final int totalReviews;
+  final bool isBestseller;
+  final List<String> syllabus;
 
   Course({
     required this.title,
@@ -23,6 +29,12 @@ class Course {
     this.level = 'Beginner',
     this.rating = 4.8,
     this.price = 'Free',
+    this.highlights = const [],
+    this.instructorName = 'Nexgen Mentors',
+    this.instructorImage = 'https://ui-avatars.com/api/?background=random',
+    this.totalReviews = 1200,
+    this.isBestseller = false,
+    this.syllabus = const [],
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
@@ -37,6 +49,12 @@ class Course {
       level: map['level'] ?? 'Beginner',
       rating: map['rating']?.toDouble() ?? 4.8,
       price: map['price'] ?? 'Free',
+      highlights: List<String>.from(map['highlights'] ?? []),
+      instructorName: map['instructorName'] ?? 'Nexgen Mentors',
+      instructorImage: map['instructorImage'] ?? 'https://ui-avatars.com/api/?background=random',
+      totalReviews: map['totalReviews'] ?? 1200,
+      isBestseller: map['isBestseller'] ?? false,
+      syllabus: List<String>.from(map['syllabus'] ?? []),
     );
   }
 }

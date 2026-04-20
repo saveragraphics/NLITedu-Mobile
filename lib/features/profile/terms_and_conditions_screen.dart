@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/theme.dart';
 
-/// Stitch 01 Privacy Policy — from Design_Specs/privacy_policy/code.html
-class PrivacyPolicyScreen extends StatelessWidget {
-  const PrivacyPolicyScreen({super.key});
+/// Terms and Conditions Screen matching Play Store baseline requirements
+class TermsAndConditionsScreen extends StatelessWidget {
+  const TermsAndConditionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +49,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     fontSize: 10, fontWeight: FontWeight.w700, color: theme.colorScheme.onPrimary, letterSpacing: 1.5)),
                 ),
                 const SizedBox(height: 12),
-                Text("Privacy Policy", style: GoogleFonts.plusJakartaSans(
+                Text("Terms of Service", style: GoogleFonts.plusJakartaSans(
                   fontSize: 32, fontWeight: FontWeight.w800, color: theme.colorScheme.onPrimary)),
                 const SizedBox(height: 6),
                 Text("Last updated: October 24, 2024", style: GoogleFonts.inter(
@@ -60,43 +59,34 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Introduction
-            _sectionTitle(context, "Introduction"),
+            _sectionTitle(context, "1. Acceptance of Terms"),
             const SizedBox(height: 12),
-            _bodyText(context, "At NLITedu, we believe education is a fundamental human right, and so is privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you use our educational platform."),
+            _bodyText(context, "By accessing or using the NLITedu platform (the \"Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."),
             const SizedBox(height: 8),
-            _bodyText(context, "We are committed to transparency and clarity. This document is designed to be readable, skipping the dense legal jargon wherever possible while maintaining the rigorous protections your data deserves."),
+            _bodyText(context, "These Terms apply to all visitors, users, and others who access or use the Service. We reserve the right, at our sole discretion, to modify or replace these Terms at any time."),
             const SizedBox(height: 32),
 
-            // Data Collection — Bento cards
-            _sectionTitle(context, "Data Collection"),
+            // Content
+            _sectionTitle(context, "2. User Accounts"),
             const SizedBox(height: 16),
-            Row(children: [
-              Expanded(child: _dataCard(context, LucideIcons.user, theme.colorScheme.primary.withOpacity(0.1), theme.colorScheme.primary,
-                "Identity Information",
-                "Full name, email address, and profile biography used to personalize your learning journey.")),
-              const SizedBox(width: 12),
-              Expanded(child: _dataCard(context, LucideIcons.barChart2, theme.colorScheme.secondary.withOpacity(0.1), theme.colorScheme.secondary,
-                "Usage Metrics",
-                "Time spent on lessons, quiz scores, and interaction patterns to optimize the platform.")),
-            ]),
-            const SizedBox(height: 12),
             Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(24)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Device & Browser Data", style: GoogleFonts.plusJakartaSans(
+                Text("Account Responsibilities", style: GoogleFonts.plusJakartaSans(
                   fontSize: 17, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
                 const SizedBox(height: 8),
-                _bodyText(context, "IP addresses, browser types, and operating system information are automatically logged to ensure technical stability and prevent unauthorized access."),
+                _bodyText(context, "When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service."),
+                const SizedBox(height: 12),
+                _bodyText(context, "You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password."),
               ]),
             ),
             const SizedBox(height: 32),
 
-            // Use of Information
-            _sectionTitle(context, "Use of Information"),
+            // Rules
+            _sectionTitle(context, "3. Platform Rules"),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(24),
@@ -106,28 +96,16 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 border: Border(left: BorderSide(color: theme.colorScheme.primary, width: 4)),
               ),
               child: Column(children: [
-                _numberedItem(context, "01", "Curating Your Path",
-                  "We use your progress data to recommend specific modules that match your learning pace and interests."),
+                _numberedItem(context, "01", "Intellectual Property",
+                  "The Service and its original content, features and functionality are and will remain the exclusive property of NLITedu and its licensors."),
                 const SizedBox(height: 20),
-                _numberedItem(context, "02", "Platform Integrity",
-                  "Automated systems analyze interaction patterns to detect fraudulent behavior or potential security threats."),
+                _numberedItem(context, "02", "Prohibited Uses",
+                  "You agree not to use the Service in any way that violates any applicable national or international law or regulation, or to engage in any conduct that restricts or inhibits anyone's use."),
                 const SizedBox(height: 20),
-                _numberedItem(context, "03", "Direct Updates",
-                  "Email communications regarding course updates, legal changes, or technical maintenance."),
+                _numberedItem(context, "03", "Termination",
+                  "We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms."),
               ]),
             ),
-            const SizedBox(height: 32),
-
-            // User Rights
-            _sectionTitle(context, "User Rights"),
-            const SizedBox(height: 8),
-            _bodyText(context, "You maintain full sovereignty over your data. Under international guidelines, you possess the following rights:"),
-            const SizedBox(height: 16),
-            _rightItem(context, "The Right to Access"),
-            const SizedBox(height: 8),
-            _rightItem(context, "The Right to Erasure (Forget Me)"),
-            const SizedBox(height: 8),
-            _rightItem(context, "The Right to Rectification"),
             const SizedBox(height: 32),
 
             // Contact
@@ -138,15 +116,15 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 color: theme.colorScheme.primary,
                 borderRadius: BorderRadius.circular(28)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Questions or Concerns?", style: GoogleFonts.plusJakartaSans(
+                Text("Need Clarification?", style: GoogleFonts.plusJakartaSans(
                   fontSize: 24, fontWeight: FontWeight.w700, color: theme.colorScheme.onPrimary)),
                 const SizedBox(height: 12),
-                Text("Our dedicated privacy officer is available to handle any inquiries regarding your data security.",
+                Text("If you have any questions about these Terms, please contact our legal support team.",
                   style: GoogleFonts.inter(fontSize: 14, color: theme.colorScheme.onPrimary.withOpacity(0.8))),
                 const SizedBox(height: 20),
                 _contactChip(context, LucideIcons.mail, "info@nlitedu.com"),
                 const SizedBox(height: 10),
-                _contactChip(context, LucideIcons.mapPin, "India HQ"),
+                _contactChip(context, LucideIcons.globe, "www.nlitedu.com/legal"),
               ]),
             ),
             const SizedBox(height: 32),
@@ -207,26 +185,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
       fontSize: 14, color: theme.colorScheme.onSurfaceVariant, height: 1.6));
   }
 
-  Widget _dataCard(BuildContext context, IconData icon, Color bgColor, Color iconColor, String title, String desc) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          width: 44, height: 44,
-          decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(14)),
-          child: Icon(icon, size: 22, color: iconColor)),
-        const SizedBox(height: 16),
-        Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
-        const SizedBox(height: 8),
-        Text(desc, style: GoogleFonts.inter(fontSize: 12, color: theme.colorScheme.onSurfaceVariant, height: 1.5)),
-      ]),
-    );
-  }
-
   Widget _numberedItem(BuildContext context, String num, String title, String desc) {
     final theme = Theme.of(context);
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -239,20 +197,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
         Text(desc, style: GoogleFonts.inter(fontSize: 13, color: theme.colorScheme.onSurfaceVariant)),
       ])),
     ]);
-  }
-
-  Widget _rightItem(BuildContext context, String text) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16)),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(text, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-        Icon(LucideIcons.chevronRight, size: 18, color: theme.colorScheme.outline),
-      ]),
-    );
   }
 
   Widget _contactChip(BuildContext context, IconData icon, String text) {

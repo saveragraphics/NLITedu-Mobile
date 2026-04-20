@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../profile/profile_provider.dart';
+import '../../providers/enrollment_service.dart';
 
 /// Stitch 01 My Learning Hub — Active courses, certifications, weekly goal, sessions
 class LearningHubScreen extends ConsumerWidget {
@@ -80,20 +82,67 @@ class LearningHubScreen extends ConsumerWidget {
             const SizedBox(height: 28),
 
             // ── Active Courses ──
-            _activeCourse(
-              title: "Advanced React Patterns & System Design",
-              module: "Module 4: Composition vs Inheritance",
-              status: "In Progress", statusColor: AppTheme.secondaryContainer,
-              progress: 0.75, progressText: "75% Complete", lessons: "12 / 16 Lessons",
-              isPrimary: true,
-            ),
-            const SizedBox(height: 16),
-            _activeCourse(
-              title: "Applied Machine Learning for Product Managers",
-              module: "Module 2: Predictive Modeling Fundamentals",
-              status: "Paused", statusColor: AppTheme.surfaceContainerHigh,
-              progress: 0.22, progressText: "22% Complete", lessons: "4 / 18 Lessons",
-              isPrimary: false,
+            ref.watch(userEnrollmentsProvider).when(
+              data: (enrollments) {
+                if (enrollments.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(32),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(LucideIcons.bookOpen, size: 48, color: AppTheme.primary),
+                        const SizedBox(height: 16),
+                        Text("No Active Enrollments", style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.onSurface)),
+                        const SizedBox(height: 8),
+                        Text("You haven't enrolled in any courses yet. Start your journey today!",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(fontSize: 13, color: AppTheme.onSurfaceVariant)),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () => context.go('/catalog'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text("Browse Catalog"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: enrollments.map((en) {
+                    final courseName = en['course'] ?? "Unknown Course";
+                    // In a real app, we might match this title back to our Course model to get the image/color
+                    return Column(
+                      children: [
+                        _activeCourse(
+                          title: courseName,
+                          module: "Status: ${en['payment_status']}",
+                          status: "Active", 
+                          statusColor: AppTheme.primary,
+                          progress: 0.05, // Placeholder until real progress tracking is added
+                          progressText: "Just Started", 
+                          lessons: "0 / 12 Lessons",
+                          isPrimary: true,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text("Error loading enrollments: $e"),
             ),
             const SizedBox(height: 32),
 

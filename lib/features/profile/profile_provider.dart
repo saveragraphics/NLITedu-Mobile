@@ -6,6 +6,7 @@ class UserProfile {
   final String id;
   final String fullName;
   final String email;
+  final String? phone;
   final String? avatarUrl;
   final bool isNotificationsEnabled;
   final int enrollmentsCount;
@@ -18,6 +19,7 @@ class UserProfile {
     required this.id,
     required this.fullName,
     required this.email,
+    this.phone,
     this.avatarUrl,
     this.isNotificationsEnabled = true,
     this.enrollmentsCount = 0,
@@ -29,6 +31,7 @@ class UserProfile {
 
   UserProfile copyWith({
     String? fullName,
+    String? phone,
     String? avatarUrl,
     bool? isNotificationsEnabled,
   }) {
@@ -36,6 +39,7 @@ class UserProfile {
       id: id,
       fullName: fullName ?? this.fullName,
       email: email,
+      phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isNotificationsEnabled: isNotificationsEnabled ?? this.isNotificationsEnabled,
       enrollmentsCount: enrollmentsCount,
@@ -55,22 +59,33 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
     _loadProfile();
   }
 
-  void _loadProfile() {
+  Future<void> _loadProfile() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
       final joinedStr = user.createdAt;
       final joined = DateTime.tryParse(joinedStr) ?? DateTime.now();
-
-      // We extract mock or metadata-based counts here to simulate "real time fetching"
-      // In a full production env, these would come from the `enrollments` table.
       final meta = user.userMetadata ?? {};
+
+      // Fetch actual enrollment count from database
+      int actualEnrollmentCount = 0;
+      try {
+        final enrollments = await Supabase.instance.client
+            .from('enrollments')
+            .select('id')
+            .eq('email', user.email!);
+        actualEnrollmentCount = (enrollments as List).length;
+      } catch (e) {
+        print("Error fetching actual enrollments: $e");
+        actualEnrollmentCount = meta['enrollments'] ?? 0;
+      }
 
       state = UserProfile(
         id: user.id,
         fullName: meta['full_name'] ?? "New Learner",
         email: user.email ?? "",
+        phone: meta['phone'],
         avatarUrl: meta['avatar_url'],
-        enrollmentsCount: meta['enrollments'] ?? 0,
+        enrollmentsCount: actualEnrollmentCount,
         certificatesCount: meta['certificates'] ?? 0,
         activeStreak: meta['streak'] ?? 1,
         avgGrade: meta['avgGrade'] ?? 4.8,
@@ -79,12 +94,12 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
     }
   }
 
-  Future<void> updateName(String name) async {
+  Future<void> updateProfile(String name, String phone) async {
     if (state == null) return;
-    state = state!.copyWith(fullName: name);
+    state = state!.copyWith(fullName: name, phone: phone);
     // Sync with Supabase
     await Supabase.instance.client.auth.updateUser(
-      UserAttributes(data: {'full_name': name}),
+      UserAttributes(data: {'full_name': name, 'phone': phone}),
     );
   }
 

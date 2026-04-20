@@ -1,5 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// --- Theme Provider ---
+
+class ThemeNotifier extends StateNotifier<ThemeMode> {
+  ThemeNotifier() : super(ThemeMode.light) {
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = prefs.getBool('isDarkMode') ?? false;
+    state = isDark ? ThemeMode.dark : ThemeMode.light;
+  }
+
+  Future<void> toggleTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = state == ThemeMode.dark;
+    await prefs.setBool('isDarkMode', !isDark);
+    state = !isDark ? ThemeMode.dark : ThemeMode.light;
+  }
+}
+
+final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+  return ThemeNotifier();
+});
 
 /// Stitch 01 "Editorial EdTech" Design System
 /// Exact tokens from Design_Specs/nexgen_aurora/DESIGN.md
@@ -177,6 +204,105 @@ class AppTheme {
           letterSpacing: -0.5,
         ),
         iconTheme: const IconThemeData(color: onSurface),
+      ),
+    );
+  }
+
+  static ThemeData dark() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.dark,
+        seedColor: primary,
+        primary: const Color(0xFFBB86FC), // Dark mode primary vibrant purple
+        onPrimary: Colors.black,
+        primaryContainer: const Color(0xFF3700B3),
+        onPrimaryContainer: Colors.white,
+        secondary: const Color(0xFF03DAC6),
+        onSecondary: Colors.black,
+        surface: const Color(0xFF121212),
+        onSurface: Colors.white,
+        onSurfaceVariant: const Color(0xFFB0B0B0),
+        outline: const Color(0xFF424242),
+        error: const Color(0xFFCF6679),
+        surfaceContainerLowest: const Color(0xFF1E1E1E),
+        surfaceContainerLow: const Color(0xFF242424),
+        surfaceContainer: const Color(0xFF2C2C2C),
+        surfaceContainerHigh: const Color(0xFF323232),
+        surfaceContainerHighest: const Color(0xFF383838),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.plusJakartaSans(
+          fontSize: 40,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+          letterSpacing: -1.5,
+          height: 0.95,
+        ),
+        displayMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 32,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+          letterSpacing: -1,
+          height: 1.0,
+        ),
+        headlineLarge: GoogleFonts.plusJakartaSans(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+          letterSpacing: -0.5,
+        ),
+        headlineMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        headlineSmall: GoogleFonts.plusJakartaSans(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        titleLarge: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          fontSize: 16,
+          color: const Color(0xFFE0E0E0),
+        ),
+        bodyMedium: GoogleFonts.inter(
+          fontSize: 14,
+          color: const Color(0xFFB0B0B0),
+        ),
+        labelLarge: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          letterSpacing: 0.1,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFBB86FC),
+          foregroundColor: Colors.black,
+          minimumSize: const Size(double.infinity, 56),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+          elevation: 2,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF1E1E1E),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF424242))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF424242))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFBB86FC), width: 2)),
+        labelStyle: GoogleFonts.inter(color: const Color(0xFF9E9E9E)),
+        hintStyle: GoogleFonts.inter(color: const Color(0xFF757575)),
       ),
     );
   }

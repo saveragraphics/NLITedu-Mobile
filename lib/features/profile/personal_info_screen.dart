@@ -14,6 +14,8 @@ class PersonalInfoScreen extends ConsumerStatefulWidget {
 
 class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   late TextEditingController _nameCtrl;
+  late TextEditingController _phoneCtrl;
+  late TextEditingController _emailCtrl;
   bool _loading = false;
 
   @override
@@ -21,24 +23,28 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     super.initState();
     final profile = ref.read(profileProvider);
     _nameCtrl = TextEditingController(text: profile?.fullName);
+    _phoneCtrl = TextEditingController(text: profile?.phone ?? "");
+    _emailCtrl = TextEditingController(text: profile?.email);
   }
 
   Future<void> _saveChanges() async {
     setState(() => _loading = true);
     try {
-      await ref.read(profileProvider.notifier).updateName(_nameCtrl.text);
+      await ref.read(profileProvider.notifier).updateProfile(_nameCtrl.text, _phoneCtrl.text);
       if (mounted) {
+        final theme = Theme.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text("Profile updated successfully!"),
-            backgroundColor: AppTheme.primary,
+            backgroundColor: theme.colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
         );
       }
     } catch(e) {
        if (mounted) {
+         final theme = Theme.of(context);
          ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error),
+          SnackBar(content: Text(e.toString()), backgroundColor: theme.colorScheme.error),
          );
        }
     } finally {
@@ -48,16 +54,17 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface, elevation: 0,
+        backgroundColor: theme.colorScheme.surface, elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.primary),
+          icon: Icon(LucideIcons.arrowLeft, color: theme.colorScheme.primary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text("Personal Info", style: GoogleFonts.plusJakartaSans(
-          fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.onSurface)),
+          fontSize: 18, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -65,23 +72,29 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Update your personal details here.", style: GoogleFonts.inter(
-              fontSize: 14, color: AppTheme.onSurfaceVariant)),
+              fontSize: 14, color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 24),
             TextField(
               controller: _nameCtrl,
               textCapitalization: TextCapitalization.words,
-              style: GoogleFonts.inter(color: AppTheme.onSurface),
-              decoration: InputDecoration(
-                hintText: "Full Name",
-                prefixIcon: const Icon(LucideIcons.user, size: 18, color: AppTheme.outline),
-                filled: true,
-                fillColor: AppTheme.surfaceContainerLowest,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.3), width: 2)),
+              style: GoogleFonts.inter(color: theme.colorScheme.onSurface),
+              decoration: _inputDeco(context, "Full Name", LucideIcons.user),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _emailCtrl,
+              readOnly: true,
+              style: GoogleFonts.inter(color: theme.colorScheme.onSurfaceVariant),
+              decoration: _inputDeco(context, "Email Address", LucideIcons.mail).copyWith(
+                 fillColor: theme.colorScheme.surfaceContainer,
               ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _phoneCtrl,
+              keyboardType: TextInputType.phone,
+              style: GoogleFonts.inter(color: theme.colorScheme.onSurface),
+              decoration: _inputDeco(context, "Phone Number", LucideIcons.phone),
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -89,18 +102,33 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _saveChanges,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
+                  backgroundColor: theme.colorScheme.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0),
                 child: _loading 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2)
                   : Text("Save Changes", style: GoogleFonts.inter(
-                      fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                      fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.onPrimary)),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDeco(BuildContext context, String hint, IconData icon) {
+    final theme = Theme.of(context);
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, size: 18, color: theme.colorScheme.outline),
+      filled: true,
+      fillColor: theme.colorScheme.surfaceContainerLowest,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: theme.colorScheme.primary.withOpacity(0.3), width: 2)),
     );
   }
 }

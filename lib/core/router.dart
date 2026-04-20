@@ -6,12 +6,15 @@ import '../features/dashboard/tabs_layout.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/course/catalog_screen.dart';
 import '../features/course/course_details_screen.dart';
+import '../features/course/enrollment_form_screen.dart';
 import '../features/dashboard/learning_hub_screen.dart';
+import '../features/dashboard/achievement_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/personal_info_screen.dart';
 import '../features/profile/notifications_settings_screen.dart';
 import '../features/profile/security_screen.dart';
 import '../features/profile/privacy_policy_screen.dart';
+import '../features/profile/terms_and_conditions_screen.dart';
 import '../models/course.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -19,7 +22,7 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(d
 
 String _initialLocation() {
   final session = Supabase.instance.client.auth.currentSession;
-  return session != null ? '/catalog' : '/login';
+  return session != null ? '/home' : '/login';
 }
 
 final router = GoRouter(
@@ -28,8 +31,8 @@ final router = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final isOnLogin = state.uri.path == '/login';
-    // If logged in and on login page, redirect to catalog (discover)
-    if (session != null && isOnLogin) return '/catalog';
+    // If logged in and on login page, redirect to home
+    if (session != null && isOnLogin) return '/home';
     // If not logged in and not on login, redirect to login
     if (session == null && !isOnLogin) return '/login';
     // If they manually try /discover, redirect to /catalog
@@ -65,6 +68,16 @@ final router = GoRouter(
         return CourseDetailsScreen(course: fallbackCourse);
       },
     ),
+    GoRoute(
+      path: '/enroll/:slug',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        if (state.extra is Course) {
+          return EnrollmentFormScreen(course: state.extra as Course);
+        }
+        return const Scaffold(body: Center(child: Text('Course data missing')));
+      },
+    ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
@@ -72,8 +85,12 @@ final router = GoRouter(
       },
       routes: [
         GoRoute(
-          path: '/achievements',
+          path: '/home',
           builder: (context, state) => const DashboardScreen(),
+        ),
+        GoRoute(
+          path: '/achievements',
+          builder: (context, state) => const AchievementScreen(),
         ),
         GoRoute(
           path: '/catalog',
@@ -102,6 +119,10 @@ final router = GoRouter(
             GoRoute(
               path: 'privacy',
               builder: (context, state) => const PrivacyPolicyScreen(),
+            ),
+            GoRoute(
+              path: 'terms',
+              builder: (context, state) => const TermsAndConditionsScreen(),
             ),
           ],
         ),
