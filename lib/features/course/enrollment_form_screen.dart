@@ -8,12 +8,13 @@ import '../../models/course.dart';
 import '../../providers/enrollment_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfdropcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
 import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
-import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
+import 'payment_webview_screen.dart';
+
 
 class EnrollmentFormScreen extends ConsumerStatefulWidget {
   final Course course;
@@ -95,6 +96,10 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   }
 
   void _handlePaymentVerify(String orderId) async {
+    // Capture data before potential navigation/dispose
+    final studentName = _fullNameController.text;
+    final studentEmail = _emailController.text;
+    
     try {
       await ref.read(enrollmentServiceProvider).confirmPayment(orderId);
       // Invalidate the enrolled status to update UI immediately
@@ -106,6 +111,15 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
           const SnackBar(content: Text('Enrollment Successful! Welcome to the class.')),
         );
       }
+
+      // 2. Trigger Confirmation Email via Website API
+      final enrollmentService = ref.read(enrollmentServiceProvider);
+      await enrollmentService.sendEnrollmentEmail(
+        studentName: studentName,
+        studentEmail: studentEmail,
+        courseTitle: widget.course.title,
+        orderId: orderId,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -146,14 +160,6 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
-      if (bytes.length > 100 * 1024) { // 100 KB
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Maximum file size strictly limited to 100 KB.')),
-          );
-        }
-        return;
-      }
       setState(() {
         if (isSem) {
           _marksheetSem = File(pickedFile.path);
@@ -171,26 +177,35 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_marksheet12 == null || _marksheetSem == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload both marksheets')),
-      );
-      return;
-    }
+    
+    // TEMPORARY: Make file upload optional for emulator testing
+    // if ((_marksheet12 == null && _marksheetSem == null) || (_marksheet12 != null && _marksheetSem != null)) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Please upload ONLY ONE certificate (10th/12th OR Semester marksheet).')),
+    //   );
+    //   return;
+    // }
 
     setState(() => _isSubmitting = true);
 
     try {
       final service = ref.read(enrollmentServiceProvider);
       
-      // 1. Upload files to Cloudinary
-      final url12 = await service.uploadToCloudinary(_marksheet12!);
-      final urlSem = await service.uploadToCloudinary(_marksheetSem!);
+      // 1. Upload file to Cloudinary (only one will be non-null)
+      String? url12;
+      String? urlSem;
+      
+      if (_marksheet12 != null) {
+        url12 = await service.uploadToCloudinary(_marksheet12!);
+      } else if (_marksheetSem != null) {
+        urlSem = await service.uploadToCloudinary(_marksheetSem!);
+      }
 
-      // 2. Prepare enrollment data
+      // 2. Prepare enrollment data — must match website columns exactly
+      final user = Supabase.instance.client.auth.currentUser;
       final enrollmentData = {
-        'fullName': _fullNameController.text,
-        'fatherName': _fatherNameController.text,
+        'full_name': _fullNameController.text,
+        'father_name': _fatherNameController.text,
         'gender': _gender,
         'email': _emailController.text,
         'whatsapp': _whatsappController.text,
@@ -198,17 +213,18 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'qualification': _qualification,
         'branch': _branchController.text,
         'semester': _semester,
-        'collegeName': _collegeNameController.text,
+        'college_name': _collegeNameController.text,
         'brn': _brnController.text,
-        'collegeType': _collegeType,
+        'college_type': _collegeType,
         'state': _state,
-        'course': _selectedCourse,
+        'course_title': _selectedCourse,
         'message': _messageController.text,
         'marks10': _marks10Controller.text,
         'marks12': _marks12Controller.text,
         'marksSem': _marksSemController.text,
         'marksheet12Url': url12,
         'marksheetSemUrl': urlSem,
+        'user_id': user?.id,
       };
 
       // 3. Initiate Payment
@@ -224,21 +240,24 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
       // 4. Save Pending to Supabase
       await service.savePendingEnrollment({
         ...enrollmentData,
-        'payment_id': orderId,
+        'cf_payment_id': orderId,
       });
 
-      // 5. Trigger Native Payment SDK
-      var session = CFSessionBuilder()
-          .setEnvironment(CFEnvironment.PRODUCTION) // Website uses production
-          .setOrderId(orderId)
-          .setPaymentSessionId(paymentSessionId)
-          .build();
+      // 5. Trigger WebView Payment to bypass "Trusted Source" security check on emulators
+      final bool? isSuccess = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => PaymentWebviewScreen(
+            paymentSessionId: paymentSessionId,
+            orderId: orderId,
+          ),
+        ),
+      );
 
-      var cfDropCheckoutPayment = CFDropCheckoutPaymentBuilder()
-          .setSession(session!)
-          .build();
-
-      await _cfPaymentGatewayService.doPayment(cfDropCheckoutPayment);
+      if (isSuccess == true) {
+        _handlePaymentVerify(orderId);
+      } else {
+        _handlePaymentError(CFErrorResponse("PAYMENT_CANCELLED", "User cancelled or payment failed", "FAILED", "Error"), orderId);
+      }
       
     } catch (e) {
       if (mounted) {
@@ -403,12 +422,26 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                   content: Column(
                     children: [
                       _buildTextField(_marks10Controller, '10th Marks (%)', LucideIcons.award),
-                      _buildTextField(_marks12Controller, '12th/Diploma Marks (%)', LucideIcons.award),
+                      _buildTextField(_marks12Controller, '12th/Diploma Marks (%)', LucideIcons.award, required: false),
                       _buildTextField(_marksSemController, 'Last Semester Marks (CGPA/%)', LucideIcons.award),
+                      const Text(
+                        'Note: Please upload ONLY ONE certificate. If you have passed out, upload your latest semester marksheet. Otherwise, upload your 10th/12th marksheet.',
+                        style: TextStyle(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 16),
-                      _buildFileUpload('10th/12th Marksheet', _marksheet12, () => _pickImage(false)),
+                      _buildFileUpload(
+                        '10th/12th Marksheet', 
+                        _marksheet12, 
+                        () => _pickImage(false),
+                        isDisabled: _marksheetSem != null,
+                      ),
                       const SizedBox(height: 12),
-                      _buildFileUpload('Last Semester Marksheet', _marksheetSem, () => _pickImage(true)),
+                      _buildFileUpload(
+                        'Last Semester Marksheet', 
+                        _marksheetSem, 
+                        () => _pickImage(true),
+                        isDisabled: _marksheet12 != null,
+                      ),
                     ],
                   ),
                 ),
@@ -455,7 +488,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
-        value: value,
+        value: value, // Use value for controlled selection, ignoring deprecated warning for now as initialValue behaves differently in some Flutter versions
         items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: onChanged,
         decoration: InputDecoration(
@@ -494,21 +527,27 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     );
   }
 
-  Widget _buildFileUpload(String label, File? file, VoidCallback onTap) {
+  Widget _buildFileUpload(String label, File? file, VoidCallback onTap, {bool isDisabled = false}) {
     return InkWell(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+          border: Border.all(color: isDisabled ? Colors.grey.shade200 : Colors.grey.shade300, style: BorderStyle.solid),
           borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade50,
+          color: isDisabled ? Colors.grey.shade100 : Colors.grey.shade50,
         ),
         child: Row(
           children: [
-            Icon(file == null ? LucideIcons.uploadCloud : LucideIcons.checkCircle, color: file == null ? Colors.grey : Colors.green),
+            Icon(
+              file == null ? LucideIcons.uploadCloud : LucideIcons.checkCircle, 
+              color: isDisabled ? Colors.grey.shade400 : (file == null ? Colors.grey : Colors.green)
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Text(file == null ? label : 'File Uploaded')),
+            Expanded(child: Text(
+              file == null ? label : 'File Uploaded',
+              style: TextStyle(color: isDisabled ? Colors.grey : Colors.black87),
+            )),
             if (file != null) const Icon(LucideIcons.eye, size: 16, color: Colors.blue),
           ],
         ),

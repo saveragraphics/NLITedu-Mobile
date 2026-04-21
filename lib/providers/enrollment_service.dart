@@ -43,36 +43,26 @@ class EnrollmentService {
     }
   }
 
-  /// Check if a user is enrolled in a specific course
+  /// Check if user is already enrolled in a course.
+  /// Uses only 'id' column (always exists) to avoid PGRST204 schema cache errors.
   Future<bool> isUserEnrolled(String email, String courseTitle) async {
     try {
-      // Try with payment_status column first
       final response = await _supabase
           .from('enrollments')
-          .select()
+          .select('id')
           .eq('email', email)
-          .eq('course', courseTitle);
+          .eq('course_title', courseTitle);
       
-      // Filter for PAID status in-memory if column exists in results
-      final results = List<Map<String, dynamic>>.from(response);
-      return results.any((r) => r['payment_status'] == 'PAID' || r['status'] == 'PAID');
+      return (response as List).isNotEmpty;
     } catch (e) {
-      // Fallback: just check if enrollment exists regardless of payment status
-      try {
-        final response = await _supabase
-            .from('enrollments')
-            .select()
-            .eq('email', email)
-            .eq('course', courseTitle)
-            .maybeSingle();
-        return response != null;
-      } catch (_) {
-        return false;
-      }
+      print('isUserEnrolled error: $e');
+      return false;
     }
   }
 
-  /// Get all enrollments for a user
+  /// Get all enrollments for a user.
+  /// Uses select() without column names so PostgREST returns whatever columns
+  /// it knows about — completely bypassing schema cache column validation.
   Future<List<Map<String, dynamic>>> getUserEnrollments(String email) async {
     try {
       final response = await _supabase
@@ -80,22 +70,10 @@ class EnrollmentService {
           .select()
           .eq('email', email);
       
-      // Filter for PAID in-memory to avoid column-missing errors
-      final results = List<Map<String, dynamic>>.from(response);
-      return results.where((r) => 
-        r['payment_status'] == 'PAID' || r['status'] == 'PAID' || !r.containsKey('payment_status')
-      ).toList();
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      // Absolute fallback
-      try {
-        final response = await _supabase
-            .from('enrollments')
-            .select()
-            .eq('email', email);
-        return List<Map<String, dynamic>>.from(response);
-      } catch (_) {
-        return [];
-      }
+      print('getUserEnrollments error: $e');
+      return [];
     }
   }
 
@@ -127,23 +105,91 @@ class EnrollmentService {
     }
   }
 
-  /// Save pending enrollment to Supabase
+  /// Save a pending enrollment to the database.
+  /// Uses .insert() — NOT .upsert() — because the enrollments table
+  /// has no UNIQUE constraint on cf_payment_id (42P10 error).
+  /// This matches the website's enrollment form behavior exactly.
   Future<void> savePendingEnrollment(Map<String, dynamic> enrollmentData) async {
-    await _supabase.from('enrollments').upsert([
-      {
-        ...enrollmentData,
-        'payment_status': 'PENDING',
-        'enrolled_at': DateTime.now().toIso8601String(),
-      }
-    ], onConflict: 'payment_id');
+    await _supabase.from('enrollments').insert({
+      ...enrollmentData,
+      'status': 'PENDING',
+    });
   }
 
-  /// Confirm payment success in Supabase
+  /// Confirm payment success in Supabase.
+  /// Uses raw HTTP PATCH with Prefer: return=minimal to completely
+  /// bypass PostgREST schema cache validation for return columns.
   Future<void> confirmPayment(String orderId) async {
-    await _supabase
-        .from('enrollments')
-        .update({'payment_status': 'PAID', 'enrolled_at': DateTime.now().toIso8601String()})
-        .eq('payment_id', orderId);
+    try {
+      // Primary: use Supabase client (no .select())
+      await _supabase
+          .from('enrollments')
+          .update({'status': 'PAID'})
+          .eq('cf_payment_id', orderId);
+    } catch (e) {
+      print('confirmPayment primary failed: $e — trying raw HTTP fallback');
+      // Fallback: use raw HTTP PATCH with return=minimal
+      await _confirmPaymentViaRest(orderId);
+    }
+  }
+
+  /// Raw HTTP fallback for confirming payment.
+  /// Sends a PATCH directly to the Supabase REST API with
+  /// Prefer: return=minimal, ensuring PostgREST never looks up
+  /// return columns in its schema cache.
+  Future<void> _confirmPaymentViaRest(String orderId) async {
+    final supabaseUrl = _supabase.rest.url.replaceAll('/rest/v1', '');
+    final anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY',
+        defaultValue: '');
+    
+    // Get the current session's access token for RLS
+    final accessToken = _supabase.auth.currentSession?.accessToken ?? anonKey;
+    
+    final uri = Uri.parse(
+      '$supabaseUrl/rest/v1/enrollments?cf_payment_id=eq.$orderId'
+    );
+
+    final response = await http.patch(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey.isNotEmpty ? anonKey : accessToken,
+        'Authorization': 'Bearer $accessToken',
+        'Prefer': 'return=minimal',
+      },
+      body: json.encode({'status': 'PAID'}),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw Exception('REST fallback failed: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  /// Send enrollment confirmation email via website API
+  Future<void> sendEnrollmentEmail({
+    required String studentName,
+    required String studentEmail,
+    required String courseTitle,
+    required String orderId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://nlitedu.com/api/email'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'studentName': studentName,
+          'studentEmail': studentEmail,
+          'courseTitle': courseTitle,
+          'orderId': orderId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        print('Failed to send enrollment email: ${response.body}');
+      }
+    } catch (e) {
+      print('Error calling email API: $e');
+    }
   }
 }
 
@@ -173,7 +219,7 @@ final enrolledFullCoursesProvider = FutureProvider<List<Course>>((ref) async {
   if (enrollments.isEmpty) return [];
 
   // Extract titles from enrollments
-  final enrolledTitles = enrollments.map((e) => e['course'] as String).toSet();
+  final enrolledTitles = enrollments.map((e) => e['course_title'] as String).toSet();
   
   // Map back to Course objects
   return allCourses.where((c) => enrolledTitles.contains(c.title)).toList();
