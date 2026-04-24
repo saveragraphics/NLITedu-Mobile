@@ -11,6 +11,7 @@ import '../../providers/learning_service.dart';
 import '../../models/live_session.dart';
 import '../../models/course.dart';
 import '../../models/learning_models.dart';
+import '../../models/quiz_models.dart';
 import 'widgets/learning_hub_widgets.dart';
 
 class LearningHubScreen extends ConsumerStatefulWidget {
@@ -49,6 +50,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     final goalAsync = ref.watch(weeklyGoalProvider);
     final certsAsync = ref.watch(certificatesProvider);
     final upcomingAsync = ref.watch(upcomingSessionsProvider);
+    final quizzesAsync = ref.watch(availableQuizzesProvider);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -58,6 +60,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ref.invalidate(certificatesProvider);
           ref.invalidate(upcomingSessionsProvider);
           ref.invalidate(enrolledFullCoursesProvider);
+          ref.invalidate(availableQuizzesProvider);
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -151,6 +154,33 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                 );
               },
               loading: () => const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.all(24), child: LinearProgressIndicator())),
+              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+            ),
+
+            // ──── Tests & Assessments ────
+            _buildShelfHeader("Tests & Assessments"),
+            quizzesAsync.when(
+              data: (quizzes) {
+                if (quizzes.isEmpty) return _buildNoDataMessage("No active tests available.");
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildQuizCard(context, quizzes[index]),
+                      ),
+                      childCount: quizzes.length,
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: _LoadingSkeleton(height: 100),
+                )
+              ),
               error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
 
@@ -313,6 +343,70 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
 
   Widget _buildEmptyState(BuildContext context) {
     return SliverFillRemaining(hasScrollBody: false, child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(LucideIcons.bookOpen, size: 64, color: Colors.grey), const SizedBox(height: 24), Text("No active enrollments", style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800)), const SizedBox(height: 32), ElevatedButton(onPressed: () => context.go('/discover'), child: const Text("Explore Courses"))])));
+  }
+
+  Widget _buildQuizCard(BuildContext context, Quiz quiz) {
+    final theme = Theme.of(context);
+    final isScheduledFuture = quiz.scheduledFor != null && quiz.scheduledFor!.isAfter(DateTime.now());
+    
+    return GestureDetector(
+      onTap: isScheduledFuture ? null : () => context.push('/quiz', extra: quiz),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.primary.withOpacity(isScheduledFuture ? 0.1 : 0.3)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isScheduledFuture ? Colors.grey.withOpacity(0.1) : AppTheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(LucideIcons.clipboardList, color: isScheduledFuture ? Colors.grey : AppTheme.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(quiz.title, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: isScheduledFuture ? Colors.grey : null)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.clock, size: 12, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text('${quiz.durationMinutes} mins', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                  if (isScheduledFuture) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Scheduled: ${quiz.scheduledFor!.day}/${quiz.scheduledFor!.month} ${quiz.scheduledFor!.hour}:${quiz.scheduledFor!.minute.toString().padLeft(2, '0')}', 
+                        style: GoogleFonts.inter(fontSize: 10, color: Colors.amber.shade800, fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                  ]
+                ],
+              ),
+            ),
+            Icon(isScheduledFuture ? LucideIcons.lock : LucideIcons.chevronRight, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
   }
 }
 

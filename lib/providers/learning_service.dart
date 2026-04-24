@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/learning_models.dart';
+import '../models/quiz_models.dart';
 
 class LearningService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -108,4 +109,28 @@ final weeklyGoalProvider = FutureProvider<LearningGoal>((ref) {
 
 final upcomingSessionsProvider = FutureProvider<List<UpcomingSession>>((ref) {
   return ref.watch(learningServiceProvider).fetchUpcomingSessions();
+});
+
+// --- Quiz Providers ---
+
+final availableQuizzesProvider = FutureProvider<List<Quiz>>((ref) async {
+  final supabase = Supabase.instance.client;
+  final response = await supabase
+      .from('quizzes')
+      .select()
+      .eq('is_active', true)
+      .order('created_at', ascending: false);
+  
+  return (response as List).map((json) => Quiz.fromJson(json)).toList();
+});
+
+final quizQuestionsProvider = FutureProvider.family<List<QuizQuestion>, String>((ref, quizId) async {
+  final supabase = Supabase.instance.client;
+  final response = await supabase
+      .from('quiz_questions')
+      .select()
+      .eq('quiz_id', quizId)
+      .order('order_index', ascending: true);
+  
+  return (response as List).map((json) => QuizQuestion.fromJson(json)).toList();
 });

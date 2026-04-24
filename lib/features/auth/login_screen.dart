@@ -71,6 +71,64 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleForgotPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) {
+      // Show email dialog if field is empty
+      final controlledEmail = await showDialog<String>(
+        context: context,
+        builder: (context) {
+          final ctrl = TextEditingController();
+          return AlertDialog(
+            title: Text("Reset Password", style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Enter your email address to receive a password reset link."),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: ctrl,
+                  decoration: _inputDeco("Email", LucideIcons.mail),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, ctrl.text.trim()),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                child: const Text("Send Link", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          );
+        }
+      );
+      if (controlledEmail == null || controlledEmail.isEmpty) return;
+      _sendResetEmail(controlledEmail);
+    } else {
+      _sendResetEmail(email);
+    }
+  }
+
+  Future<void> _sendResetEmail(String email) async {
+    setState(() => _loading = true);
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'https://nlitedu.com/auth/reset-password',
+      );
+      _showSuccess("Password reset link sent to $email");
+    } on AuthException catch (e) {
+      _showError(e.message);
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -182,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _label("Password"),
                             if (!_isSignUp)
                               GestureDetector(
-                                onTap: () {},
+                                onTap: _handleForgotPassword,
                                 child: Text("Forgot Password?", style: GoogleFonts.inter(
                                   fontSize: 13, fontWeight: FontWeight.w600,
                                   color: AppTheme.primary, fontStyle: FontStyle.italic)),

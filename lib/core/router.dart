@@ -10,6 +10,7 @@ import '../features/course/enrollment_form_screen.dart';
 import '../features/dashboard/learning_hub_screen.dart';
 import '../features/dashboard/course_content_view.dart';
 import '../features/dashboard/achievement_screen.dart';
+import '../features/dashboard/quiz_player_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/personal_info_screen.dart';
 import '../features/profile/notifications_settings_screen.dart';
@@ -18,6 +19,7 @@ import '../features/profile/privacy_policy_screen.dart';
 import '../features/profile/terms_and_conditions_screen.dart';
 import '../models/course.dart';
 import '../models/live_session.dart';
+import '../models/quiz_models.dart';
 import '../features/course/live_class_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -89,6 +91,16 @@ final router = GoRouter(
           return LiveClassScreen(session: state.extra as LiveSession);
         }
         return const Scaffold(body: Center(child: Text('Session data missing')));
+      },
+    ),
+    GoRoute(
+      path: '/quiz',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        if (state.extra is Quiz) {
+          return QuizPlayerScreen(quiz: state.extra as Quiz);
+        }
+        return const Scaffold(body: Center(child: Text('Quiz data missing')));
       },
     ),
     ShellRoute(
