@@ -23,3 +23,11 @@
 -keepclasseswithmembernames class * {
     native <methods>;
 }
+
+# Fix for R8 minification errors
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
+-dontwarn com.google.firebase.messaging.**
+-dontwarn com.google.android.gms.**
+-dontwarn org.apache.http.**
+-dontwarn android.net.http.**

@@ -1,4 +1,4 @@
-package io.supabase.nlitedu
+package com.nlitedu.app
 
 import io.flutter.embedding.android.FlutterActivity
 
