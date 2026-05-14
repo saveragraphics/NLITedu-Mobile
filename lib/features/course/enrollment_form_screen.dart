@@ -63,11 +63,24 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     "SolidWorks",
     "CATIA",
     "Android & iOS Mobile Development",
-    "IoT & Embedded Systems"
+    "IoT & Embedded Systems",
+    "3DS Max + VRay",
+    "SketchUp",
+    "ETABS",
+    "Data Science",
+    "AI",
+    "C++",
+    "ANSYS",
+    "Primavera P6",
+    "CorelDRAW",
+    "AutoCAD 2.0 Advance",
+    "AutoCAD (Electrical)",
+    "AutoCAD (Mechanical)",
   ];
 
   File? _marksheet12;
   File? _marksheetSem;
+  File? _collegeIdFile;
   final _messageController = TextEditingController();
 
   late CFPaymentGatewayService _cfPaymentGatewayService;
@@ -155,11 +168,10 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   Future<void> _pickImage(bool isSem) async {
     final pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 70, // Consistent with website's 100KB limit
+      imageQuality: 70,
     );
 
     if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
       setState(() {
         if (isSem) {
           _marksheetSem = File(pickedFile.path);
@@ -170,9 +182,57 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     }
   }
 
+  Future<void> _pickCollegeId() async {
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      if (bytes.length > 200 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('College ID must be under 200 KB.')),
+          );
+        }
+        return;
+      }
+      setState(() => _collegeIdFile = File(pickedFile.path));
+    }
+  }
+
+  bool get _isCollegeStudent => _collegeType == 'govt' || _collegeType == 'private';
+
+  bool get _isFormComplete {
+    final baseComplete = _fullNameController.text.isNotEmpty &&
+        _fatherNameController.text.isNotEmpty &&
+        _gender != null &&
+        _emailController.text.isNotEmpty &&
+        _whatsappController.text.isNotEmpty &&
+        _dob != null &&
+        _qualification != null &&
+        _branchController.text.isNotEmpty &&
+        _semester != null &&
+        _collegeNameController.text.isNotEmpty &&
+        _brnController.text.isNotEmpty &&
+        _collegeType != null &&
+        _state != null &&
+        _marks10Controller.text.isNotEmpty &&
+        _marksSemController.text.isNotEmpty;
+    if (_isCollegeStudent) {
+      return baseComplete && _collegeIdFile != null;
+    }
+    return baseComplete;
+  }
+
   double get _currentFee {
     if (_collegeType == null || _state == null) return 0;
-    return ref.read(enrollmentServiceProvider).calculateFee(_collegeType!, _state!);
+    return ref.read(enrollmentServiceProvider).calculateFee(_collegeType!, _state!, courseTitle: _selectedCourse);
+  }
+
+  double get _displayPrice {
+    return ref.read(enrollmentServiceProvider).getDisplayPrice(_selectedCourse ?? widget.course.title);
   }
 
   Future<void> _submitForm() async {
@@ -201,6 +261,12 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         urlSem = await service.uploadToCloudinary(_marksheetSem!);
       }
 
+      // Upload College ID if present
+      String? collegeIdUrl;
+      if (_collegeIdFile != null) {
+        collegeIdUrl = await service.uploadToCloudinary(_collegeIdFile!);
+      }
+
       // 2. Prepare enrollment data — must match website columns exactly
       final user = Supabase.instance.client.auth.currentUser;
       final enrollmentData = {
@@ -224,6 +290,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'marksSem': _marksSemController.text,
         'marksheet12Url': url12,
         'marksheetSemUrl': urlSem,
+        'collegeIdUrl': collegeIdUrl,
         'user_id': user?.id,
       };
 
@@ -327,7 +394,11 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                           child: _isSubmitting 
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                             : Text(
-                              _currentStep == 2 ? 'Pay ₹${_currentFee.toInt()}' : 'Continue',
+                              _currentStep == 2
+                                ? (_isFormComplete && _currentFee > 0
+                                    ? 'Pay ₹${_currentFee.toInt()}'
+                                    : '🔒 Complete form to see price')
+                                : 'Continue',
                               style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                         ),
@@ -392,13 +463,26 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                         value: _semester,
                       ),
                       _buildTextField(_collegeNameController, 'College Name', LucideIcons.school),
-                      _buildTextField(_brnController, 'Registration/Roll No.', LucideIcons.hash),
+                      _buildTextField(
+                        _brnController, 
+                        _collegeType == 'job' ? 'Job / Employee ID' : 'Registration/Roll No.', 
+                        LucideIcons.hash,
+                      ),
                       _buildDropdownField(
                         'College Type', 
-                        ['Government', 'Private'], 
-                        (val) => setState(() => _collegeType = val == 'Government' ? 'govt' : 'private'),
-                        value: _collegeType == 'govt' ? 'Government' : (_collegeType == 'private' ? 'Private' : null),
+                        ['Government', 'Private', 'Job Professional'], 
+                        (val) => setState(() => _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job')),
+                        value: _collegeType == 'govt' ? 'Government' : (_collegeType == 'private' ? 'Private' : (_collegeType == 'job' ? 'Job Professional' : null)),
                       ),
+                      if (_isCollegeStudent) ...[
+                        const SizedBox(height: 4),
+                        _buildFileUpload(
+                          'Upload College ID (Max 200KB, JPG/PNG) *',
+                          _collegeIdFile,
+                          _pickCollegeId,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                        _buildDropdownField(
                         'State', 
                         _states, 

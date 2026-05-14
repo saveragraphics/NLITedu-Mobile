@@ -16,12 +16,49 @@ class EnrollmentService {
   final String _cloudName = "dx1ywq1pi";
   final String _uploadPreset = "nlitedu_uploads";
 
-  /// Calculate enrollment fee based on college type and state
-  double calculateFee(String collegeType, String state) {
-    if (collegeType == 'govt') {
-      return state == 'Bihar' ? 999.0 : 1499.0;
+  /// Course-specific pricing map matching web app
+  static const Map<String, Map<String, double>> coursePricing = {
+    'AutoCAD 2D & 3D Design': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 5999},
+    'Revit Building Information Modeling (BIM)': {'govt': 2499, 'private': 3999, 'job': 4999, 'display': 6999},
+    'STAAD Pro': {'govt': 2499, 'private': 3999, 'job': 4999, 'display': 6999},
+    'SolidWorks': {'govt': 2999, 'private': 4999, 'job': 5999, 'display': 9999},
+    '3DS Max + VRay': {'govt': 3999, 'private': 5999, 'job': 7999, 'display': 12999},
+    'CATIA': {'govt': 2999, 'private': 3999, 'job': 4999, 'display': 9999},
+    'SketchUp': {'govt': 2999, 'private': 3999, 'job': 4999, 'display': 9999},
+    'ETABS': {'govt': 3999, 'private': 5999, 'job': 7999, 'display': 14999},
+    'Java Programming': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
+    'Python Programming': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
+    'Python for Data Science & AI': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
+    'Data Science': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
+    'Android & iOS Mobile Development': {'govt': 3999, 'private': 5999, 'job': 7999, 'display': 14999},
+    'AI': {'govt': 2999, 'private': 3999, 'job': 5999, 'display': 9999},
+    'MATLAB for Scientific Computing': {'govt': 2999, 'private': 3999, 'job': 5999, 'display': 9999},
+    'C++': {'govt': 2499, 'private': 3499, 'job': 4499, 'display': 8999},
+    'ANSYS': {'govt': 3999, 'private': 4999, 'job': 7999, 'display': 14999},
+    'Primavera P6': {'govt': 2999, 'private': 3999, 'job': 4999, 'display': 14999},
+    'CorelDRAW': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 7999},
+    'AutoCAD 2.0 Advance': {'govt': 2999, 'private': 3999, 'job': 5999, 'display': 9999},
+    'AutoCAD (Electrical)': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 5999},
+    'AutoCAD (Mechanical)': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 5999},
+    'IoT & Embedded Systems': {'govt': 2999, 'private': 3999, 'job': 5999, 'display': 9999},
+    'NLIT Course Enrollment': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
+  };
+
+  /// Calculate enrollment fee based on college type and course title
+  double calculateFee(String collegeType, String state, {String? courseTitle}) {
+    if (courseTitle != null && coursePricing.containsKey(courseTitle)) {
+      return coursePricing[courseTitle]![collegeType] ?? 0.0;
     }
-    return collegeType == 'private' ? 1999.0 : 0.0;
+    // Fallback for unknown courses
+    if (collegeType == 'govt') return 1999.0;
+    if (collegeType == 'private') return 2999.0;
+    if (collegeType == 'job') return 3999.0;
+    return 0.0;
+  }
+
+  /// Get display price for a course
+  double getDisplayPrice(String courseTitle) {
+    return coursePricing[courseTitle]?['display'] ?? 6999.0;
   }
 
   /// Upload file to Cloudinary
@@ -165,31 +202,16 @@ class EnrollmentService {
     }
   }
 
-  /// Send enrollment confirmation email via website API
+  /// Send enrollment confirmation email via website API (DEPRECATED - Webhook handles this)
   Future<void> sendEnrollmentEmail({
     required String studentName,
     required String studentEmail,
     required String courseTitle,
     required String orderId,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://nlitedu.com/api/email'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'studentName': studentName,
-          'studentEmail': studentEmail,
-          'courseTitle': courseTitle,
-          'orderId': orderId,
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        print('Failed to send enrollment email: ${response.body}');
-      }
-    } catch (e) {
-      print('Error calling email API: $e');
-    }
+    // Deprecated: Email is now sent automatically by the Supabase Cashfree Webhook
+    // to ensure payment_amount and payment_time are always included correctly.
+    print('sendEnrollmentEmail skipped - Webhook will handle this.');
   }
 }
 
