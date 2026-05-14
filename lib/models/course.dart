@@ -17,6 +17,10 @@ class Course {
   final int totalReviews;
   final bool isBestseller;
   final List<String> syllabus;
+  final double govtPrice;
+  final double pvtPrice;
+  final double jobPrice;
+  final bool isLegacyPricing;
 
   Course({
     required this.title,
@@ -35,26 +39,43 @@ class Course {
     this.totalReviews = 1200,
     this.isBestseller = false,
     this.syllabus = const [],
+    this.govtPrice = 0,
+    this.pvtPrice = 0,
+    this.jobPrice = 0,
+    this.isLegacyPricing = false,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
+    // Map category to color
+    Color catColor = Colors.blue;
+    String category = (map['category'] ?? 'General').toString().toUpperCase();
+    if (category.contains('DESIGN')) catColor = Colors.orange;
+    if (category.contains('PROGRAMMING')) catColor = Colors.red;
+    if (category.contains('DATA SCIENCE')) catColor = Colors.blue;
+    if (category.contains('ENGINEERING')) catColor = Colors.indigo;
+    if (category.contains('MANAGEMENT')) catColor = Colors.green;
+
     return Course(
       title: map['title'] ?? '',
       description: map['description'] ?? '',
-      imageUrl: map['image'] ?? '',
+      imageUrl: map['image_url'] ?? map['image'] ?? '',
       slug: map['slug'] ?? '',
       category: map['category'] ?? 'General',
-      categoryColor: map['categoryColor'] ?? Colors.blue,
+      categoryColor: catColor,
       duration: map['duration'] ?? '12 Hours',
       level: map['level'] ?? 'Beginner',
       rating: map['rating']?.toDouble() ?? 4.8,
-      price: map['price'] ?? 'Free',
-      highlights: List<String>.from(map['highlights'] ?? []),
-      instructorName: map['instructorName'] ?? 'NLITedu Official',
-      instructorImage: map['instructorImage'] ?? 'assets/app_logo.png',
+      price: map['price_label'] ?? map['price'] ?? 'Free',
+      highlights: map['highlights'] != null ? List<String>.from(map['highlights']) : const [],
+      instructorName: map['instructor_name'] ?? map['instructorName'] ?? 'NLITedu Official',
+      instructorImage: map['instructor_image'] ?? map['instructorImage'] ?? 'assets/app_logo.png',
       totalReviews: map['totalReviews'] ?? 1200,
-      isBestseller: map['isBestseller'] ?? false,
-      syllabus: List<String>.from(map['syllabus'] ?? []),
+      isBestseller: map['is_bestseller'] ?? map['isBestseller'] ?? false,
+      syllabus: map['syllabus'] != null ? List<String>.from(map['syllabus'] is List ? map['syllabus'] : []) : const [],
+      govtPrice: (map['govt_price'] ?? 0).toDouble(),
+      pvtPrice: (map['pvt_price'] ?? 0).toDouble(),
+      jobPrice: (map['job_price'] ?? 0).toDouble(),
+      isLegacyPricing: map['is_legacy_pricing'] ?? false,
     );
   }
 }

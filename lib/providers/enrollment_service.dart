@@ -241,7 +241,7 @@ final userEnrollmentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref)
 /// A provider that maps simple enrollment records to full Course objects for valid UI rendering
 final enrolledFullCoursesProvider = FutureProvider<List<Course>>((ref) async {
   final enrollments = await ref.watch(userEnrollmentsProvider.future);
-  final allCourses = ref.watch(courseProvider);
+  final allCourses = await ref.watch(courseProvider.future);
   
   if (enrollments.isEmpty) return [];
 

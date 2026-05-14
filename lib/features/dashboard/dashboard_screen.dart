@@ -19,7 +19,8 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final profile = ref.watch(profileProvider);
-    final allCourses = ref.watch(courseProvider);
+    final allCoursesAsync = ref.watch(courseProvider);
+    final allCourses = allCoursesAsync.valueOrNull ?? [];
 
     // Safe top padding for glass nav bar overlap
     final topNavHeight = MediaQuery.of(context).padding.top + 72;

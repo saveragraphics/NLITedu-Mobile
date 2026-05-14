@@ -23,7 +23,8 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allCourses = ref.watch(courseProvider);
+    final allCoursesAsync = ref.watch(courseProvider);
+    final allCourses = allCoursesAsync.valueOrNull ?? [];
     final trendingCourses = allCourses.where((c) => c.isBestseller).toList();
     
     final filteredCourses = allCourses.where((course) {
@@ -128,8 +129,14 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                     child: const Icon(LucideIcons.userPlus, color: Colors.white, size: 20),
                   ),
                   onPressed: () {
-                    final generalCourse = ref.read(courseProvider).firstWhere((c) => c.slug == 'general');
-                    context.push('/enroll/general', extra: generalCourse);
+                    final courses = ref.read(courseProvider).valueOrNull;
+                    if (courses != null && courses.isNotEmpty) {
+                      final generalCourse = courses.firstWhere(
+                        (c) => c.slug == 'general',
+                        orElse: () => courses.first,
+                      );
+                      context.push('/enroll/general', extra: generalCourse);
+                    }
                   },
                   tooltip: 'Quick Enroll',
                 ),
