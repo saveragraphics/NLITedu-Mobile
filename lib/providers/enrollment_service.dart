@@ -46,18 +46,23 @@ class EnrollmentService {
 
   /// Calculate enrollment fee based on college type and course title
   double calculateFee(String collegeType, String state, {String? courseTitle}) {
-    if (courseTitle != null && coursePricing.containsKey(courseTitle)) {
+    if (courseTitle != null && coursePricing.containsKey(courseTitle) && courseTitle != 'NLIT Course Enrollment') {
       return coursePricing[courseTitle]![collegeType] ?? 0.0;
     }
-    // Fallback for unknown courses
-    if (collegeType == 'govt') return 1999.0;
-    if (collegeType == 'private') return 2999.0;
-    if (collegeType == 'job') return 3999.0;
+    // Fallback for internship courses ('NLIT Course Enrollment') or unknown courses
+    if (collegeType == 'govt') {
+      return state == 'Bihar' ? 999.0 : 1499.0;
+    }
+    if (collegeType == 'private') return 1999.0;
+    if (collegeType == 'job') return 2999.0;
     return 0.0;
   }
 
   /// Get display price for a course
   double getDisplayPrice(String courseTitle) {
+    if (courseTitle == 'NLIT Course Enrollment' || !coursePricing.containsKey(courseTitle)) {
+      return 6999.0;
+    }
     return coursePricing[courseTitle]?['display'] ?? 6999.0;
   }
 
