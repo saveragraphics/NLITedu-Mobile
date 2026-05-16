@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:screen_protector/screen_protector.dart';
@@ -40,7 +41,23 @@ class _SecureVideoPlayerState extends State<SecureVideoPlayer> {
         forceHD: false,
         enableCaption: true,
       ),
-    );
+    )..addListener(_onPlayerStateChange);
+  }
+
+  void _onPlayerStateChange() {
+    if (_controller.value.isFullScreen != _isFullScreen) {
+      setState(() {
+        _isFullScreen = _controller.value.isFullScreen;
+      });
+      
+      if (_isFullScreen) {
+        // Hide status bar and navigation bar in full screen
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      } else {
+        // Show status bar and navigation bar when exiting full screen
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
+    }
   }
 
   Future<void> _setupSecurity() async {
@@ -49,13 +66,15 @@ class _SecureVideoPlayerState extends State<SecureVideoPlayer> {
   }
 
   Future<void> _cleanupSecurity() async {
-    // Re-enable screenshots when leaving the player
+    // Re-enable screenshots and restore UI when leaving the player
     await ScreenProtector.preventScreenshotOff();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
   @override
   void dispose() {
     _cleanupSecurity();
+    _controller.removeListener(_onPlayerStateChange);
     _controller.dispose();
     super.dispose();
   }
@@ -63,8 +82,14 @@ class _SecureVideoPlayerState extends State<SecureVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return YoutubePlayerBuilder(
-      onEnterFullScreen: () => setState(() => _isFullScreen = true),
-      onExitFullScreen: () => setState(() => _isFullScreen = false),
+      onEnterFullScreen: () {
+        setState(() => _isFullScreen = true);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      },
+      onExitFullScreen: () {
+        setState(() => _isFullScreen = false);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      },
       player: YoutubePlayer(
         controller: _controller,
         showVideoProgressIndicator: true,
