@@ -245,9 +245,20 @@ final enrolledFullCoursesProvider = FutureProvider<List<Course>>((ref) async {
   
   if (enrollments.isEmpty) return [];
 
-  // Extract titles from enrollments
-  final enrolledTitles = enrollments.map((e) => e['course_title'] as String).toSet();
+  // Extract cleaned titles from enrollments for robust matching
+  final enrolledTitles = enrollments
+      .map((e) => (e['course_title'] as String).trim().toLowerCase())
+      .toSet();
   
-  // Map back to Course objects
-  return allCourses.where((c) => enrolledTitles.contains(c.title)).toList();
+  // Map back to Course objects using case-insensitive title matching
+  return allCourses.where((c) {
+    final title = c.title.trim().toLowerCase();
+    
+    // Explicitly handle the general enrollment course
+    if (c.slug == 'general' && enrolledTitles.contains('nlit course enrollment')) {
+      return true;
+    }
+    
+    return enrolledTitles.contains(title);
+  }).toList();
 });

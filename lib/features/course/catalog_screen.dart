@@ -17,7 +17,7 @@ class CatalogScreen extends ConsumerStatefulWidget {
 }
 
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
-  final List<String> _filters = ["All", "Programming", "Design", "Engineering", "Data Science", "Marketing"];
+  final List<String> _filters = ["All", "Internship", "Programming", "Design", "Engineering", "Data Science", "Marketing"];
   int _selectedFilter = 0;
   String _searchQuery = "";
 
@@ -28,8 +28,15 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
     final trendingCourses = allCourses.where((c) => c.isBestseller).toList();
     
     final filteredCourses = allCourses.where((course) {
-      final matchesFilter = _selectedFilter == 0 || 
-                            course.category.toLowerCase() == _filters[_selectedFilter].toLowerCase();
+      bool matchesFilter = false;
+      
+      if (_selectedFilter == 0) {
+        matchesFilter = true;
+      } else if (_filters[_selectedFilter] == "Internship") {
+        matchesFilter = course.isLegacyPricing && course.slug != 'general';
+      } else {
+        matchesFilter = course.category.toLowerCase() == _filters[_selectedFilter].toLowerCase() && !course.isLegacyPricing;
+      }
                             
       final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
                             course.description.toLowerCase().contains(_searchQuery.toLowerCase());
