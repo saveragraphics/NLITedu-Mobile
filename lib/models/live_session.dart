@@ -5,6 +5,7 @@ class LiveSession {
   final String sessionUrl;
   final bool isLive;
   final DateTime startedAt;
+  final DateTime? scheduledAt;
 
   LiveSession({
     required this.id,
@@ -13,6 +14,7 @@ class LiveSession {
     required this.sessionUrl,
     required this.isLive,
     required this.startedAt,
+    this.scheduledAt,
   });
 
   factory LiveSession.fromJson(Map<String, dynamic> json) {
@@ -22,7 +24,8 @@ class LiveSession {
       courseTitle: json['course_title'] ?? json['course_id'],
       sessionUrl: json['session_url'],
       isLive: json['is_live'] ?? false,
-      startedAt: DateTime.parse(json['started_at']),
+      startedAt: json['started_at'] != null ? DateTime.parse(json['started_at']) : DateTime.now(),
+      scheduledAt: json['scheduled_at'] != null ? DateTime.parse(json['scheduled_at']) : null,
     );
   }
 }

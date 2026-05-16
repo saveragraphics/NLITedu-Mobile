@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import '../../models/live_session.dart';
 import '../../providers/live_provider.dart';
 import '../../providers/learning_service.dart';
@@ -32,6 +33,17 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
 
     // 2. Initialize WebView with permissions
     _initWebView();
+
+    // 3. Prevent Screenshots and Screen Recording
+    _enableSecureMode();
+  }
+
+  Future<void> _enableSecureMode() async {
+    await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+  }
+
+  Future<void> _disableSecureMode() async {
+    await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
   }
 
   Future<void> _initWebView() async {
@@ -93,6 +105,8 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     if (_attendanceLogId != null) {
       ref.read(learningServiceProvider).endSessionSession(_attendanceLogId!);
     }
+    // 4. Disable Secure Mode on exit
+    _disableSecureMode();
     super.dispose();
   }
 

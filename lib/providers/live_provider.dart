@@ -14,6 +14,18 @@ class LiveService {
         .map((maps) => maps.map((m) => LiveSession.fromJson(m)).toList());
   }
 
+  /// Stream of upcoming scheduled sessions
+  Stream<List<LiveSession>> get upcomingSessionsStream {
+    return _supabase
+        .from('live_sessions')
+        .stream(primaryKey: ['id'])
+        .eq('is_live', false)
+        .map((maps) => maps
+            .map((m) => LiveSession.fromJson(m))
+            .where((s) => s.scheduledAt != null && s.scheduledAt!.isAfter(DateTime.now().subtract(const Duration(hours: 1))))
+            .toList());
+  }
+
   /// Log student attendance
   Future<void> logAttendance(LiveSession session) async {
     final user = _supabase.auth.currentUser;
@@ -36,4 +48,10 @@ final liveServiceProvider = Provider((ref) => LiveService());
 final activeLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
   final service = ref.watch(liveServiceProvider);
   return service.activeSessionsStream;
+});
+
+/// Provider for upcoming scheduled sessions
+final upcomingLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
+  final service = ref.watch(liveServiceProvider);
+  return service.upcomingSessionsStream;
 });

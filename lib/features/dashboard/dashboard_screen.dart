@@ -55,8 +55,9 @@ class DashboardScreen extends ConsumerWidget {
         // Safe top padding for glass nav bar overlap
         final topNavHeight = MediaQuery.of(context).padding.top + 72;
 
-        // Watch for live sessions
+        // Watch for live and upcoming sessions
         final liveSessionsAsync = ref.watch(activeLiveSessionsProvider);
+        final upcomingSessionsAsync = ref.watch(upcomingLiveSessionsProvider);
         final userEnrollmentsAsync = ref.watch(userEnrollmentsProvider);
 
         return Scaffold(
@@ -163,7 +164,6 @@ class DashboardScreen extends ConsumerWidget {
                 data: (sessions) {
                   if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
                   
-                  // Filter sessions for matching user enrollments
                   return userEnrollmentsAsync.when(
                     data: (enrollments) {
                       final activeForUser = sessions.where((s) => 
@@ -176,6 +176,49 @@ class DashboardScreen extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                           child: _buildLiveBanner(context, activeForUser.first),
+                        ),
+                      );
+                    },
+                    loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                    error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              ),
+
+              // ──── Upcoming Sessions Section ────
+              upcomingSessionsAsync.when(
+                data: (sessions) {
+                  if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+                  return userEnrollmentsAsync.when(
+                    data: (enrollments) {
+                      final upcomingForUser = sessions.where((s) => 
+                        enrollments.any((e) => e['course_title'] == s.courseTitle)
+                      ).toList();
+
+                      if (upcomingForUser.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+                      return SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
+                              child: Text("Upcoming Classes", style: GoogleFonts.plusJakartaSans(
+                                fontSize: 18, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+                            ),
+                            SizedBox(
+                              height: 100,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                itemCount: upcomingForUser.length,
+                                itemBuilder: (_, i) => _buildUpcomingCard(context, upcomingForUser[i]),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -342,6 +385,41 @@ class DashboardScreen extends ConsumerWidget {
             ),
             child: const Text("Join Class", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpcomingCard(BuildContext context, LiveSession session) {
+    final theme = Theme.of(context);
+    final timeStr = session.scheduledAt != null 
+        ? "${session.scheduledAt!.hour}:${session.scheduledAt!.minute.toString().padLeft(2, '0')}" 
+        : "TBD";
+
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              Icon(LucideIcons.calendar, size: 12, color: theme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Text(timeStr, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: theme.colorScheme.primary)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(session.courseTitle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 2),
+          Text("Scheduled", style: GoogleFonts.inter(fontSize: 9, color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
     );
