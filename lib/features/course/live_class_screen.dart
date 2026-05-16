@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:screen_protector/screen_protector.dart';
@@ -40,23 +41,20 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
 
   Future<void> _enableSecureMode() async {
     await ScreenProtector.preventScreenshotOn();
-    await ScreenProtector.protectDataOn();
   }
 
   Future<void> _disableSecureMode() async {
     await ScreenProtector.preventScreenshotOff();
-    await ScreenProtector.protectDataOff();
   }
 
   Future<void> _initWebView() async {
     // Request Camera and Microphone permissions for WebRTC
     await [Permission.camera, Permission.microphone].request();
 
-    final PlatformWebViewControllerCreationParams params;
+    late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
         allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserActionForPlayback: const <PlaybackMediaType>{},
       );
     } else {
       params = const PlatformWebViewControllerCreationParams();
@@ -77,13 +75,6 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
           },
         ),
       );
-
-    // Specific Android Permission handling
-    if (_controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
-      (_controller.platform as AndroidWebViewController)
-          .setOnPermissionRequest((request) => request.grant());
-    }
 
     _controller.loadRequest(Uri.parse(widget.session.sessionUrl));
   }
