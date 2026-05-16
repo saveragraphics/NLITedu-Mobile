@@ -80,3 +80,29 @@ class UpcomingSession {
     );
   }
 }
+
+class RecordedSession {
+  final String id;
+  final String topic;
+  final String videoUrl;
+  final String recordedAt;
+  final String courseTitle;
+
+  RecordedSession({
+    required this.id,
+    required this.topic,
+    required this.videoUrl,
+    required this.recordedAt,
+    required this.courseTitle,
+  });
+
+  factory RecordedSession.fromJson(Map<String, dynamic> json) {
+    return RecordedSession(
+      id: json['id'],
+      topic: json['topic'],
+      videoUrl: json['video_url'],
+      recordedAt: json['recorded_at'],
+      courseTitle: json['course_title'],
+    );
+  }
+}

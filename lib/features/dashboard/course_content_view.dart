@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../models/course.dart';
+import '../../models/learning_models.dart';
+import '../../providers/learning_service.dart';
+import '../course/secure_video_player.dart';
 
 class CourseContentView extends ConsumerWidget {
   final Course course;
@@ -14,6 +18,7 @@ class CourseContentView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final recordingsAsync = ref.watch(courseRecordingsProvider(course.title));
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -71,6 +76,120 @@ class CourseContentView extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+
+          // ──── Class Recordings Section ────
+          recordingsAsync.when(
+            data: (recordings) {
+              if (recordings.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+              
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(LucideIcons.playCircle, color: Colors.red, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Text("Class Recordings", 
+                            style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 160,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: recordings.length,
+                          itemBuilder: (context, index) {
+                            final r = recordings[index];
+                            final date = DateTime.tryParse(r.recordedAt) ?? DateTime.now();
+                            
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SecureVideoPlayer(
+                                      videoUrl: r.videoUrl,
+                                      topic: r.topic,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 220,
+                                margin: const EdgeInsets.only(right: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerLowest,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        DateFormat('dd MMM yyyy').format(date),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      r.topic,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        const Icon(LucideIcons.play, size: 14, color: AppTheme.primary),
+                                        const SizedBox(width: 6),
+                                        Text("Watch Class", 
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12, 
+                                            fontWeight: FontWeight.w700, 
+                                            color: AppTheme.primary
+                                          )),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+            error: (e, s) => const SliverToBoxAdapter(child: SizedBox.shrink()),
           ),
 
           // ──── Curriculum Section ────

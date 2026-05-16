@@ -95,6 +95,17 @@ class LearningService {
       }).eq('user_email', user.email!);
     }
   }
+
+  /// Fetch recorded sessions for a specific course
+  Future<List<RecordedSession>> fetchRecordedSessionsByCourse(String courseTitle) async {
+    final response = await _supabase
+        .from('recorded_sessions')
+        .select()
+        .eq('course_title', courseTitle)
+        .order('recorded_at', ascending: false);
+    
+    return (response as List).map((json) => RecordedSession.fromJson(json)).toList();
+  }
 }
 
 final learningServiceProvider = Provider((ref) => LearningService());
@@ -109,6 +120,10 @@ final weeklyGoalProvider = FutureProvider<LearningGoal>((ref) {
 
 final upcomingSessionsProvider = FutureProvider<List<UpcomingSession>>((ref) {
   return ref.watch(learningServiceProvider).fetchUpcomingSessions();
+});
+
+final courseRecordingsProvider = FutureProvider.family<List<RecordedSession>, String>((ref, courseTitle) {
+  return ref.watch(learningServiceProvider).fetchRecordedSessionsByCourse(courseTitle);
 });
 
 // --- Quiz Providers ---
