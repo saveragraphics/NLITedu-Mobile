@@ -205,12 +205,26 @@ class DashboardScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
-                              child: Text("Upcoming Classes", style: GoogleFonts.plusJakartaSans(
-                                fontSize: 18, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+                              padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("Upcoming Classes", style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 20, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface, letterSpacing: -0.5)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text("FOR YOU", style: GoogleFonts.inter(
+                                      fontSize: 9, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 1)),
+                                  ),
+                                ],
+                              ),
                             ),
                             SizedBox(
-                              height: 100,
+                              height: 140, // Slightly taller for better cards
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -342,85 +356,142 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildLiveBanner(BuildContext context, LiveSession session) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(2), // For the gradient border effect
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.red.shade200, width: 2),
+        gradient: const LinearGradient(
+          colors: [Colors.redAccent, Color(0xFFFF5252), Colors.orangeAccent],
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(14)),
-            child: const Icon(LucideIcons.video, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: theme.brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.white,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          children: [
+            // Pulsing Live Indicator
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Row(
-                  children: [
-                    const Text("LIVE NOW", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
-                    const SizedBox(width: 6),
-                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-                  ],
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                Text(session.courseTitle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 16)),
+                const Icon(LucideIcons.video, color: Colors.red, size: 24),
               ],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => context.push('/live-session', extra: session),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text("LIVE NOW", style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(session.courseTitle, 
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.5),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-            child: const Text("Join Class", style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => context.push('/live-session', extra: session),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Colors.red, Color(0xFFFF5252)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text("Join", style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildUpcomingCard(BuildContext context, LiveSession session) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    final dateStr = session.scheduledAt != null 
+        ? "${session.scheduledAt!.day}/${session.scheduledAt!.month}"
+        : "Soon";
     final timeStr = session.scheduledAt != null 
         ? "${session.scheduledAt!.hour}:${session.scheduledAt!.minute.toString().padLeft(2, '0')}" 
         : "TBD";
 
     return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(16),
+      width: 220,
+      margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? const Color(0xFF252525) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              Icon(LucideIcons.calendar, size: 12, color: theme.colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(timeStr, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: theme.colorScheme.primary)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(session.courseTitle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 2),
-          Text("Scheduled", style: GoogleFonts.inter(fontSize: 9, color: theme.colorScheme.onSurfaceVariant)),
+        boxShadow: [
+          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 8)),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.calendar, size: 12, color: theme.colorScheme.primary),
+                      const SizedBox(width: 6),
+                      Text(dateStr, style: GoogleFonts.inter(
+                        fontSize: 10, fontWeight: FontWeight.w800, color: theme.colorScheme.primary)),
+                    ],
+                  ),
+                ),
+                Text(timeStr, style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+              ],
+            ),
+            const Spacer(),
+            Text(session.courseTitle, 
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.3),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(width: 6, height: 6, decoration: BoxDecoration(color: Colors.blue.shade400, shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                Text("Scheduled Class", style: GoogleFonts.inter(
+                  fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurfaceVariant)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
