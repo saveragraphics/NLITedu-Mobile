@@ -92,7 +92,18 @@ class _LoginScreenState extends State<LoginScreen> {
       
       if (mounted) context.go('/catalog');
     } catch (e) {
-      _showError("Google Sign-In failed: ${e.toString()}");
+      String errorMsg = "Google Sign-In failed: ${e.toString()}";
+      
+      // Provide helpful guidance for common DEVELOPER_ERROR (10)
+      if (e.toString().contains("ApiException: 10") || e.toString().contains("10:")) {
+        errorMsg = "Google Sign-In Error (10): This is usually a 'Developer Error'. \n\n"
+            "Please ensure:\n"
+            "1. You have added your SHA-1 fingerprints (Debug & Release) to Firebase.\n"
+            "2. You have placed 'google-services.json' in android/app/.\n"
+            "3. The package name matches exactly in Firebase.";
+      }
+      
+      _showError(errorMsg);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

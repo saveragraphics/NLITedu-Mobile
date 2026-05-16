@@ -70,5 +70,17 @@
 	<string>We need access to your camera for live classes and video conferencing.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to your microphone for live classes and interactive sessions.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- TODO: Replace this with the REVERSED_CLIENT_ID from GoogleService-Info.plist -->
+				<string>com.googleusercontent.apps.553860336647-gjot0c0l26a1eqn0ofal5ck59coes44e</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

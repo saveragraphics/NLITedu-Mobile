@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "553860336647",
+    "project_id": "nlitedu",
+    "storage_bucket": "nlitedu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:553860336647:android:a0db3bb7be93a74641ac90",
+        "android_client_info": {
+          "package_name": "com.nlitedu.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "553860336647-gjot0c0l26a1eqn0ofal5ck59coes44e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrCwApWkL-Gxhq-XDwJErTfxPj-08IqJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
