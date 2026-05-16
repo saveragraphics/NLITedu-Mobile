@@ -21,6 +21,9 @@ class DashboardScreen extends ConsumerWidget {
     final profile = ref.watch(profileProvider);
     final allCoursesAsync = ref.watch(courseProvider);
     final allCourses = allCoursesAsync.valueOrNull ?? [];
+    
+    final foundationCourses = allCourses.where((c) => !c.isLegacyPricing && c.slug != 'general').toList();
+    final internshipCourses = allCourses.where((c) => c.isLegacyPricing && c.slug != 'general').toList();
 
     // Safe top padding for glass nav bar overlap
     final topNavHeight = MediaQuery.of(context).padding.top + 72;
@@ -165,32 +168,57 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
 
-          // ──── Section Header ────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
-              child: _buildSectionHeader(context),
-            ),
-          ),
-
-          // ──── Horizontal Course Card Scroll ────
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 310,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: allCourses.where((c) => c.slug != 'general').length,
-                itemBuilder: (_, i) {
-                  final filteredCourses = allCourses.where((c) => c.slug != 'general').toList();
-                  return Padding(
-                    padding: EdgeInsets.only(right: i < filteredCourses.length - 1 ? 16 : 0),
-                    child: _buildCourseCard(context, filteredCourses[i]),
-                  );
-                },
+          // ──── Foundation Courses Section ────
+          if (foundationCourses.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                child: _buildSectionHeader(context, "Foundation Courses"),
               ),
             ),
-          ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 310,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  itemCount: foundationCourses.length,
+                  itemBuilder: (_, i) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: i < foundationCourses.length - 1 ? 16 : 0),
+                      child: _buildCourseCard(context, foundationCourses[i]),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+
+          // ──── Internship Programs Section ────
+          if (internshipCourses.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                child: _buildSectionHeader(context, "Internship Programs"),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 310,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  itemCount: internshipCourses.length,
+                  itemBuilder: (_, i) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: i < internshipCourses.length - 1 ? 16 : 0),
+                      child: _buildCourseCard(context, internshipCourses[i]),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
 
           // ──── Featured badges row ────
           SliverToBoxAdapter(
@@ -348,14 +376,14 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Text("Foundation Courses", style: GoogleFonts.plusJakartaSans(
+        Text(title, style: GoogleFonts.plusJakartaSans(
           fontSize: 22, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface, letterSpacing: -0.5)),
         GestureDetector(
           onTap: () => context.go('/catalog'),

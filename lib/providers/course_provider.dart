@@ -11,7 +11,6 @@ final courseProvider = FutureProvider<List<Course>>((ref) async {
     final response = await supabase
         .from('courses')
         .select('*')
-        .eq('is_legacy_pricing', false)
         .order('created_at', ascending: true);
 
     final List<dynamic> data = response as List<dynamic>;
