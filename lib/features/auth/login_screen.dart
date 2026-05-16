@@ -67,10 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // 3. Configure your Web Client ID in the Supabase Dashboard
       
       final googleSignIn = GoogleSignIn(
-        // The clientId is only needed for iOS. 
-        // serverClientId (Web Client ID) is needed to get the idToken for Supabase.
-        // Replace with your actual IDs from Google Cloud Console / Supabase Dashboard.
-        // serverClientId: 'YOUR_WEB_CLIENT_ID_FROM_SUPABASE',
+        serverClientId: '553860336647-gjot0c0l26a1eqn0ofal5ck59coes44e.apps.googleusercontent.com',
       );
       
       final googleUser = await googleSignIn.signIn();
