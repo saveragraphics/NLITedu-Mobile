@@ -12,7 +12,9 @@ import '../../models/live_session.dart';
 import '../../models/course.dart';
 import '../../models/learning_models.dart';
 import '../../models/quiz_models.dart';
+import '../../models/recorded_session.dart';
 import 'widgets/learning_hub_widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LearningHubScreen extends ConsumerStatefulWidget {
   const LearningHubScreen({super.key});
@@ -51,6 +53,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     final certsAsync = ref.watch(certificatesProvider);
     final upcomingAsync = ref.watch(upcomingSessionsProvider);
     final quizzesAsync = ref.watch(availableQuizzesProvider);
+    final recordedAsync = ref.watch(recordedSessionsProvider);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -61,6 +64,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ref.invalidate(upcomingSessionsProvider);
           ref.invalidate(enrolledFullCoursesProvider);
           ref.invalidate(availableQuizzesProvider);
+          ref.invalidate(recordedSessionsProvider);
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -195,6 +199,28 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => UpcomingSessionTile(session: sessions[index]),
                       childCount: sessions.length,
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+            ),
+
+            // ──── Class Recordings ────
+            _buildShelfHeader("Class Recordings"),
+            recordedAsync.when(
+              data: (recordings) {
+                if (recordings.isEmpty) return _buildNoDataMessage("No recorded classes available yet.");
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildRecordingTile(context, recordings[index]),
+                      ),
+                      childCount: recordings.length,
                     ),
                   ),
                 );
@@ -407,6 +433,53 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
         ),
       ),
     );
+  }
+
+  Widget _buildRecordingTile(BuildContext context, RecordedSession recording) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            child: const Icon(LucideIcons.playCircle, color: AppTheme.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(recording.topic, style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text("${recording.courseTitle} • ${recording.recordedAt.day} ${_getMonth(recording.recordedAt.month)}", 
+                  style: GoogleFonts.inter(fontSize: 11, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
+              final url = Uri.parse(recording.videoUrl);
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            }, 
+            icon: const Icon(LucideIcons.externalLink, size: 18, color: AppTheme.primary)
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMonth(int month) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return months[month - 1];
   }
 }
 

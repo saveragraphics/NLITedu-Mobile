@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/live_session.dart';
+import '../models/recorded_session.dart';
 
 class LiveService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -24,6 +25,15 @@ class LiveService {
             .map((m) => LiveSession.fromJson(m))
             .where((s) => s.scheduledAt != null && s.scheduledAt!.isAfter(DateTime.now().subtract(const Duration(hours: 1))))
             .toList());
+  }
+
+  /// Stream of recorded sessions
+  Stream<List<RecordedSession>> get recordedSessionsStream {
+    return _supabase
+        .from('recorded_sessions')
+        .stream(primaryKey: ['id'])
+        .order('recorded_at', ascending: false)
+        .map((maps) => maps.map((m) => RecordedSession.fromJson(m)).toList());
   }
 
   /// Log student attendance
@@ -54,4 +64,10 @@ final activeLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
 final upcomingLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
   final service = ref.watch(liveServiceProvider);
   return service.upcomingSessionsStream;
+});
+
+/// Provider for recorded classes
+final recordedSessionsProvider = StreamProvider<List<RecordedSession>>((ref) {
+  final service = ref.watch(liveServiceProvider);
+  return service.recordedSessionsStream;
 });
