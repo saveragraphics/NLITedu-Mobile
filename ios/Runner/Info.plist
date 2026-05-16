@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera for live classes and video conferencing.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone for live classes and interactive sessions.</string>
 </dict>
 </plist>
