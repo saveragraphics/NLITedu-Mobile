@@ -47,8 +47,8 @@ class DashboardScreen extends ConsumerWidget {
         ),
       ),
       data: (allCourses) {
-        final foundationCourses = allCourses.where((c) => !c.isLegacyPricing && c.slug != 'general').toList();
-        final internshipCourses = allCourses.where((c) => c.isLegacyPricing && c.slug != 'general').toList();
+        final foundationCourses = allCourses.where((c) => !c.isInternship && c.slug != 'general').toList();
+        final internshipCourses = allCourses.where((c) => c.isInternship && c.slug != 'general').toList();
 
         // Safe top padding for glass nav bar overlap
         final topNavHeight = MediaQuery.of(context).padding.top + 72;

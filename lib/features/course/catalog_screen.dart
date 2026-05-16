@@ -33,9 +33,9 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
       if (_selectedFilter == 0) {
         matchesFilter = true;
       } else if (_filters[_selectedFilter] == "Internship") {
-        matchesFilter = course.isLegacyPricing && course.slug != 'general';
+        matchesFilter = course.isInternship && course.slug != 'general';
       } else {
-        matchesFilter = course.category.toLowerCase() == _filters[_selectedFilter].toLowerCase() && !course.isLegacyPricing;
+        matchesFilter = course.category.toLowerCase() == _filters[_selectedFilter].toLowerCase() && !course.isInternship;
       }
                             
       final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||

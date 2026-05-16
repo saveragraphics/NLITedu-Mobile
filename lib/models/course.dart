@@ -22,6 +22,25 @@ class Course {
   final double jobPrice;
   final bool isLegacyPricing;
 
+  static const List<String> internshipSlugs = [
+    "autocad-2d-3d-design",
+    "java-programming",
+    "python-programming",
+    "data-science",
+    "artificial-intelligence",
+    "matlab-scientific-computing",
+    "android-ios-mobile-development",
+    "iot-embedded",
+    "revit-bim",
+    "solidworks",
+    "catia",
+    "sketchup",
+    "etabs",
+    "general"
+  ];
+
+  bool get isInternship => internshipSlugs.contains(slug);
+
   Course({
     required this.title,
     required this.description,
