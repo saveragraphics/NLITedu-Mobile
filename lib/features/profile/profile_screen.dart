@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import 'profile_provider.dart';
@@ -282,6 +283,7 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
+      try { await GoogleSignIn().signOut(); } catch (_) {}
       await Supabase.instance.client.auth.signOut();
       if (context.mounted) context.go('/login');
     }

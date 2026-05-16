@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // 3. Configure your Web Client ID in the Supabase Dashboard
       
       final googleSignIn = GoogleSignIn(
-        serverClientId: '553860336647-gjot0c0l26a1eqn0ofal5ck59coes44e.apps.googleusercontent.com',
+        serverClientId: '488391507633-9d6f6e5kh6596ec4io8c852ctleqct4l.apps.googleusercontent.com',
       );
       
       final googleUser = await googleSignIn.signIn();
@@ -208,15 +208,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPad),
-                      child: Column(
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPad),
+                  child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: screenH * 0.04),
@@ -379,15 +377,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
+        );
+      }
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(left: 4),
     child: Text(text, style: GoogleFonts.inter(

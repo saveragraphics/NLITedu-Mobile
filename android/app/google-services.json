@@ -1,21 +1,37 @@
 {
   "project_info": {
-    "project_number": "553860336647",
-    "project_id": "nlitedu",
-    "storage_bucket": "nlitedu.appspot.com"
+    "project_number": "488391507633",
+    "project_id": "nlitedu-a4418",
+    "storage_bucket": "nlitedu-a4418.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:553860336647:android:a0db3bb7be93a74641ac90",
+        "mobilesdk_app_id": "1:488391507633:android:a0db3bb7be93a74641ac90",
         "android_client_info": {
           "package_name": "com.nlitedu.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "553860336647-gjot0c0l26a1eqn0ofal5ck59coes44e.apps.googleusercontent.com",
+          "client_id": "488391507633-9d6f6e5kh6596ec4io8c852ctleqct4l.apps.googleusercontent.com",
           "client_type": 3
+        },
+        {
+          "client_id": "488391507633-lbocimepk9oqtti61m2ocglljmss6cdb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nlitedu.app",
+            "certificate_hash": "e169e4043da822aa31f31a7610a2efed51523769"
+          }
+        },
+        {
+          "client_id": "488391507633-ug0rt8cpdd988b4n55h0d5mbj3ra3fd8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nlitedu.app",
+            "certificate_hash": "e5e321d22ef480e09af751c6c47c2194a805e20de"
+          }
         }
       ],
       "api_key": [
