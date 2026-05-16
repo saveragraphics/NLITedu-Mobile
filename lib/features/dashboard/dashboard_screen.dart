@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/utils/svg_utils.dart';
 import '../../core/theme.dart';
 import '../profile/profile_provider.dart';
 import '../../models/course.dart';
@@ -219,7 +221,12 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ],
 
-              // ──── Internship Programs Section ────
+              // ──── Internship Program Details (Static) ────
+              SliverToBoxAdapter(
+                child: _buildInternshipProgramDetails(context),
+              ),
+
+              // ──── Internship Programs Section (Dynamic) ────
               if (internshipCourses.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
@@ -453,8 +460,22 @@ class DashboardScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(28),
                         child: Hero(
                           tag: 'hero_discover_${course.slug}',
-                          child: Image.network(course.imageUrl, fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Icon(LucideIcons.bookOpen, size: 50, color: AppTheme.outline)),
+                          child: Image.network(
+                            course.imageUrl, 
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: course.categoryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: SvgPicture.string(
+                                getCategorySvg(course.category),
+                                colorFilter: ColorFilter.mode(course.categoryColor, BlendMode.srcIn),
+                                width: 50, height: 50,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -540,6 +561,107 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInternshipProgramDetails(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final details = [
+      {
+        "title": "Flexible Durations",
+        "desc": "Choose between 4-week foundational or 6-week comprehensive programs.",
+        "svg": '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+      },
+      {
+        "title": "Real-World Experience",
+        "desc": "Apply training on live projects and build a professional portfolio.",
+        "svg": '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h11M3 6h11M3 14h7m4 0l4 4m0 0l4-4m-4 4V4"></path></svg>',
+      },
+      {
+        "title": "Boost Employability",
+        "desc": "Gain a competitive edge with hands-on skills and certifications.",
+        "svg": '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h8m-8 4h6m-6 0l-1 2m8-2l1 2"></path></svg>',
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Internship Program Details",
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onSurface,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ...details.map((item) => Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: SvgPicture.string(
+                        item["svg"]!,
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(theme.colorScheme.primary, BlendMode.srcIn),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item["title"]!,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            item["desc"]!,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: theme.colorScheme.onSurfaceVariant,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
       ),
     );
   }

@@ -22,24 +22,7 @@ class Course {
   final double jobPrice;
   final bool isLegacyPricing;
 
-  static const List<String> internshipSlugs = [
-    "autocad-2d-3d-design",
-    "java-programming",
-    "python-programming",
-    "data-science",
-    "artificial-intelligence",
-    "matlab-scientific-computing",
-    "android-ios-mobile-development",
-    "iot-embedded",
-    "revit-bim",
-    "solidworks",
-    "catia",
-    "sketchup",
-    "etabs",
-    "general"
-  ];
-
-  bool get isInternship => internshipSlugs.contains(slug);
+  final bool isInternship;
 
   Course({
     required this.title,
@@ -62,6 +45,7 @@ class Course {
     this.pvtPrice = 0,
     this.jobPrice = 0,
     this.isLegacyPricing = false,
+    this.isInternship = false,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
@@ -83,11 +67,22 @@ class Course {
       return false;
     }
 
+    final slug = map['slug'] ?? '';
+    final dbIsInternship = parseBool(map['is_internship']);
+    
+    // Fallback to slug list if DB flag is not set
+    final isInternship = dbIsInternship || [
+      "autocad-2d-3d-design", "java-programming", "python-programming",
+      "data-science", "artificial-intelligence", "matlab-scientific-computing",
+      "android-ios-mobile-development", "iot-embedded", "revit-bim",
+      "solidworks", "catia", "sketchup", "etabs", "general"
+    ].contains(slug);
+
     return Course(
       title: map['title'] ?? '',
       description: map['description'] ?? '',
       imageUrl: map['image_url'] ?? map['image'] ?? '',
-      slug: map['slug'] ?? '',
+      slug: slug,
       category: map['category'] ?? 'General',
       categoryColor: catColor,
       duration: map['duration'] ?? '12 Hours',
@@ -104,6 +99,7 @@ class Course {
       pvtPrice: (map['pvt_price'] ?? 0).toDouble(),
       jobPrice: (map['job_price'] ?? 0).toDouble(),
       isLegacyPricing: parseBool(map['is_legacy_pricing']),
+      isInternship: isInternship,
     );
   }
 }

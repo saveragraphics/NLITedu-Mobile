@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/utils/svg_utils.dart';
 import '../../core/theme.dart';
 import '../../models/course.dart';
 import '../../providers/course_provider.dart';
@@ -17,72 +19,81 @@ class CatalogScreen extends ConsumerStatefulWidget {
 }
 
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
-  final List<String> _filters = ["All", "Internship", "Programming", "Design", "Engineering", "Data Science", "Marketing"];
   int _selectedFilter = 0;
   String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
-    final allCoursesAsync = ref.watch(courseProvider);
-    final allCourses = allCoursesAsync.valueOrNull ?? [];
-    final trendingCourses = allCourses.where((c) => c.isBestseller).toList();
+    final coursesAsync = ref.watch(courseProvider);
     
-    final filteredCourses = allCourses.where((course) {
-      bool matchesFilter = false;
-      
-      if (_selectedFilter == 0) {
-        matchesFilter = true;
-      } else if (_filters[_selectedFilter] == "Internship") {
-        matchesFilter = course.isInternship && course.slug != 'general';
-      } else {
-        matchesFilter = course.category.toLowerCase() == _filters[_selectedFilter].toLowerCase() && !course.isInternship;
-      }
-                            
-      final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                            course.description.toLowerCase().contains(_searchQuery.toLowerCase());
-      
-      return matchesFilter && matchesSearch;
-    }).toList();
+    return coursesAsync.when(
+      data: (allCourses) {
+        // Derive categories dynamically
+        final dynamicCategories = allCourses.map((c) => c.category).toSet().toList();
+        dynamicCategories.sort();
+        final List<String> filters = ["All", "Foundation", "Internship", ...dynamicCategories];
+        
+        final filteredCourses = allCourses.where((course) {
+          final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) || 
+                              course.description.toLowerCase().contains(_searchQuery.toLowerCase());
+          
+          bool matchesFilter = false;
+          if (_selectedFilter == 0) {
+            matchesFilter = true;
+          } else if (filters[_selectedFilter] == "Foundation") {
+            matchesFilter = !course.isInternship && course.slug != 'general';
+          } else if (filters[_selectedFilter] == "Internship") {
+            matchesFilter = course.isInternship && course.slug != 'general';
+          } else {
+            matchesFilter = course.category.toLowerCase() == filters[_selectedFilter].toLowerCase() && !course.isInternship;
+          }
+          
+          return matchesSearch && matchesFilter;
+        }).toList();
 
-    final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          _buildPremiumHeader(context),
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                _buildFiltersBar(),
-                if (_searchQuery.isEmpty && _selectedFilter == 0) ...[
-                   _buildSectionHeader("Trending Now", true),
-                   _buildTrendingCarousel(trendingCourses),
-                   const SizedBox(height: 32),
-                ],
-                _buildSectionHeader(_selectedFilter == 0 ? "All Courses" : _filters[_selectedFilter], false),
-              ],
-            ),
-          ),
-          if (filteredCourses.isEmpty)
-            _buildEmptyState()
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: EnhancedCourseCard(course: filteredCourses[index]),
-                  ),
-                  childCount: filteredCourses.length,
+        final theme = Theme.of(context);
+        return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
+          body: CustomScrollView(
+            slivers: [
+              _buildPremiumHeader(context),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildFilterBar(filters),
+                    if (_searchQuery.isEmpty && _selectedFilter == 0) ...[
+                       _buildSectionHeader("Trending Now", true),
+                       _buildTrendingCarousel(allCourses.where((c) => c.isBestseller).toList()),
+                       const SizedBox(height: 32),
+                    ],
+                    _buildSectionHeader(_selectedFilter == 0 ? "All Courses" : filters[_selectedFilter], false),
+                  ],
                 ),
               ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
-        ],
-      ),
+              if (filteredCourses.isEmpty)
+                _buildEmptyState()
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: EnhancedCourseCard(course: filteredCourses[index]),
+                      ),
+                      childCount: filteredCourses.length,
+                    ),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            ],
+          ),
+        );
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
     );
   }
 
@@ -175,36 +186,42 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
     );
   }
 
-  Widget _buildFiltersBar() {
-    return SizedBox(
-      height: 48,
+  Widget _buildFilterBar(List<String> filters) {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _filters.length,
-        itemBuilder: (context, i) => Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: _buildModernChip(context, _filters[i], i == _selectedFilter, () => setState(() => _selectedFilter = i)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernChip(BuildContext context, String label, bool active, VoidCallback onTap) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: active ? [BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))] : [],
-        ),
-        child: Text(label, style: GoogleFonts.plusJakartaSans(
-          fontSize: 14, fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-          color: active ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant)),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final isSelected = _selectedFilter == index;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(filters[index]),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() => _selectedFilter = index);
+              },
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+              selectedColor: Theme.of(context).colorScheme.primary,
+              labelStyle: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              showCheckmark: false,
+              elevation: isSelected ? 4 : 0,
+            ),
+          );
+        },
       ),
     );
   }
@@ -292,7 +309,25 @@ class TrendingCourseCard extends ConsumerWidget {
                 children: [
                   Center(child: Padding(
                     padding: const EdgeInsets.all(32),
-                    child: Hero(tag: 'hero_discover_${course.slug}', child: Image.network(course.imageUrl, fit: BoxFit.contain)),
+                    child: Hero(
+                      tag: 'hero_discover_${course.slug}', 
+                      child: Image.network(
+                        course.imageUrl, 
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: course.categoryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: SvgPicture.string(
+                            getCategorySvg(course.category),
+                            colorFilter: ColorFilter.mode(course.categoryColor, BlendMode.srcIn),
+                            width: 60, height: 60,
+                          ),
+                        ),
+                      ),
+                    ),
                   )),
                   Positioned(top: 20, left: 20, child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -386,7 +421,25 @@ class EnhancedCourseCard extends ConsumerWidget {
                 children: [
                   Center(child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Hero(tag: 'hero_discover_list_${course.slug}', child: Image.network(course.imageUrl, fit: BoxFit.contain)),
+                    child: Hero(
+                      tag: 'hero_discover_list_${course.slug}', 
+                      child: Image.network(
+                        course.imageUrl, 
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: course.categoryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: SvgPicture.string(
+                            getCategorySvg(course.category),
+                            colorFilter: ColorFilter.mode(course.categoryColor, BlendMode.srcIn),
+                            width: 40, height: 40,
+                          ),
+                        ),
+                      ),
+                    ),
                   )),
                 ],
               ),

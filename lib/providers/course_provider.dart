@@ -5,26 +5,20 @@ import '../models/course.dart';
 
 /// Provider that fetches courses dynamically from Supabase.
 /// This allows the app to stay updated without code changes.
-final courseProvider = FutureProvider<List<Course>>((ref) async {
-  try {
-    final supabase = Supabase.instance.client;
-    final response = await supabase
-        .from('courses')
-        .select('*')
-        .order('created_at', ascending: true);
-
-    final List<dynamic> data = response as List<dynamic>;
-    
-    if (data.isEmpty) {
-      return staticCourses;
-    }
-
-    return data.map((map) => Course.fromMap(map)).toList();
-  } catch (e) {
-    debugPrint('Error fetching courses from Supabase: $e');
-    // Fallback to hardcoded list if network fails or table doesn't exist
-    return staticCourses;
-  }
+/// Provider that fetches courses in real-time from Supabase.
+/// This allows the app to stay updated instantly without manual refresh.
+final courseProvider = StreamProvider<List<Course>>((ref) {
+  final supabase = Supabase.instance.client;
+  
+  // Create a stream from the 'courses' table
+  return supabase
+      .from('courses')
+      .stream(primaryKey: ['id'])
+      .order('created_at', ascending: true)
+      .map((data) {
+        if (data.isEmpty) return staticCourses;
+        return data.map((map) => Course.fromMap(map)).toList();
+      });
 });
 
 /// Hardcoded fallback list to ensure the app works even offline or during migration.
