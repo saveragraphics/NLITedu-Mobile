@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 
@@ -58,10 +59,46 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    await Supabase.instance.client.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: 'io.supabase.nlitedu://login-callback',
-    );
+    setState(() => _loading = true);
+    try {
+      // NOTE: To make this work on Android/iOS, you MUST:
+      // 1. Add your google-services.json to android/app/
+      // 2. Add your GoogleService-Info.plist to ios/Runner/
+      // 3. Configure your Web Client ID in the Supabase Dashboard
+      
+      final googleSignIn = GoogleSignIn(
+        // The clientId is only needed for iOS. 
+        // serverClientId (Web Client ID) is needed to get the idToken for Supabase.
+        // Replace with your actual IDs from Google Cloud Console / Supabase Dashboard.
+        // serverClientId: 'YOUR_WEB_CLIENT_ID_FROM_SUPABASE',
+      );
+      
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        setState(() => _loading = false);
+        return; // User cancelled
+      }
+      
+      final googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw 'No ID Token found. Ensure you have configured the Web Client ID correctly.';
+      }
+
+      await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+      
+      if (mounted) context.go('/catalog');
+    } catch (e) {
+      _showError("Google Sign-In failed: ${e.toString()}");
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _signInWithApple() async {
