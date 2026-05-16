@@ -116,8 +116,7 @@ class CourseContentView extends ConsumerWidget {
                             
                             return GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
+                                Navigator.of(context, rootNavigator: true).push(
                                   MaterialPageRoute(
                                     builder: (context) => SecureVideoPlayer(
                                       videoUrl: r.videoUrl,
