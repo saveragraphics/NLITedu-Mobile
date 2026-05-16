@@ -20,235 +20,262 @@ class DashboardScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final profile = ref.watch(profileProvider);
     final allCoursesAsync = ref.watch(courseProvider);
-    final allCourses = allCoursesAsync.valueOrNull ?? [];
-    
-    final foundationCourses = allCourses.where((c) => !c.isLegacyPricing && c.slug != 'general').toList();
-    final internshipCourses = allCourses.where((c) => c.isLegacyPricing && c.slug != 'general').toList();
 
-    // Safe top padding for glass nav bar overlap
-    final topNavHeight = MediaQuery.of(context).padding.top + 72;
-
-    // Watch for live sessions
-    final liveSessionsAsync = ref.watch(activeLiveSessionsProvider);
-    final userEnrollmentsAsync = ref.watch(userEnrollmentsProvider);
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          // ──── Hero Section ────
-          SliverToBoxAdapter(
-            child: Container(
-              padding: EdgeInsets.fromLTRB(24, topNavHeight + 16, 24, 32),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.brightness == Brightness.dark ? const Color(0xFF1E1E1E) : const Color(0xFF0F0B1A),
-                    theme.colorScheme.primary.withOpacity(0.95),
-                  ],
-                ),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(36)),
+    return allCoursesAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (err, stack) => Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(LucideIcons.wifiOff, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text("Failed to load courses", style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => ref.refresh(courseProvider),
+                child: const Text("Retry"),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Welcome text
-                  Text(
-                    "Transform Your\nFuture with NLIT",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      height: 1.2,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "Hands-on tech training & internships in Java, Python, AutoCAD, Revit, MATLAB and more.",
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.75),
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // CTA row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => context.go('/catalog'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("Browse Courses", style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.primary)),
-                                const SizedBox(width: 6),
-                                Icon(LucideIcons.arrowRight, size: 16, color: theme.colorScheme.primary),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () => _showCourseSelectionModal(context, allCourses),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withOpacity(0.3)),
-                          ),
-                          child: Text("Enroll Now", style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Stats row inside hero
-                  Row(
-                    children: [
-                      _heroStat("11+", "Courses"),
-                      Container(width: 1, height: 32, color: Colors.white.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 16)),
-                      _heroStat("5000+", "Students"),
-                      Container(width: 1, height: 32, color: Colors.white.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 16)),
-                      _heroStat("98%", "Success"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
+        ),
+      ),
+      data: (allCourses) {
+        final foundationCourses = allCourses.where((c) => !c.isLegacyPricing && c.slug != 'general').toList();
+        final internshipCourses = allCourses.where((c) => c.isLegacyPricing && c.slug != 'general').toList();
 
-          // ──── Live Session Banner ────
-          liveSessionsAsync.when(
-            data: (sessions) {
-              if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-              
-              // Filter sessions for matching user enrollments
-              return userEnrollmentsAsync.when(
-                data: (enrollments) {
-                  final activeForUser = sessions.where((s) => 
-                    enrollments.any((e) => e['course_title'] == s.courseTitle)
-                  ).toList();
+        // Safe top padding for glass nav bar overlap
+        final topNavHeight = MediaQuery.of(context).padding.top + 72;
 
-                  if (activeForUser.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        // Watch for live sessions
+        final liveSessionsAsync = ref.watch(activeLiveSessionsProvider);
+        final userEnrollmentsAsync = ref.watch(userEnrollmentsProvider);
 
-                  return SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                      child: _buildLiveBanner(context, activeForUser.first),
+        return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
+          body: CustomScrollView(
+            slivers: [
+              // ──── Hero Section ────
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(24, topNavHeight + 16, 24, 32),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.brightness == Brightness.dark ? const Color(0xFF1E1E1E) : const Color(0xFF0F0B1A),
+                        theme.colorScheme.primary.withOpacity(0.95),
+                      ],
                     ),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(36)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Welcome text
+                      Text(
+                        "Transform Your\nFuture with NLIT",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.2,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "Hands-on tech training & internships in Java, Python, AutoCAD, Revit, MATLAB and more.",
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.75),
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // CTA row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => context.go('/catalog'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("Browse Courses", style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.primary)),
+                                    const SizedBox(width: 6),
+                                    Icon(LucideIcons.arrowRight, size: 16, color: theme.colorScheme.primary),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => _showCourseSelectionModal(context, allCourses),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                              ),
+                              child: Text("Enroll Now", style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // Stats row inside hero
+                      Row(
+                        children: [
+                          _heroStat("${allCourses.length}+", "Courses"),
+                          Container(width: 1, height: 32, color: Colors.white.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 16)),
+                          _heroStat("5000+", "Students"),
+                          Container(width: 1, height: 32, color: Colors.white.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 16)),
+                          _heroStat("98%", "Success"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ──── Live Session Banner ────
+              liveSessionsAsync.when(
+                data: (sessions) {
+                  if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  
+                  // Filter sessions for matching user enrollments
+                  return userEnrollmentsAsync.when(
+                    data: (enrollments) {
+                      final activeForUser = sessions.where((s) => 
+                        enrollments.any((e) => e['course_title'] == s.courseTitle)
+                      ).toList();
+
+                      if (activeForUser.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                          child: _buildLiveBanner(context, activeForUser.first),
+                        ),
+                      );
+                    },
+                    loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                    error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
                   );
                 },
                 loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
                 error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              );
-            },
-            loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-          ),
-
-          // ──── Profile Stats Grid ────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              child: _buildStatsGrid(context, profile),
-            ),
-          ),
-
-          // ──── Foundation Courses Section ────
-          if (foundationCourses.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
-                child: _buildSectionHeader(context, "Foundation Courses"),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 310,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: foundationCourses.length,
-                  itemBuilder: (_, i) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: i < foundationCourses.length - 1 ? 16 : 0),
-                      child: _buildCourseCard(context, foundationCourses[i]),
-                    );
-                  },
+
+              // ──── Profile Stats Grid ────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  child: _buildStatsGrid(context, profile),
                 ),
               ),
-            ),
-          ],
 
-          // ──── Internship Programs Section ────
-          if (internshipCourses.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
-                child: _buildSectionHeader(context, "Internship Programs"),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 310,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: internshipCourses.length,
-                  itemBuilder: (_, i) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: i < internshipCourses.length - 1 ? 16 : 0),
-                      child: _buildCourseCard(context, internshipCourses[i]),
-                    );
-                  },
+              // ──── Foundation Courses Section ────
+              if (foundationCourses.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                    child: _buildSectionHeader(context, "Foundation Courses"),
+                  ),
                 ),
-              ),
-            ),
-          ],
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 310,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: foundationCourses.length,
+                      itemBuilder: (_, i) {
+                        return Padding(
+                          padding: EdgeInsets.only(right: i < foundationCourses.length - 1 ? 16 : 0),
+                          child: _buildCourseCard(context, foundationCourses[i]),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
 
-          // ──── Featured badges row ────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Why Choose NLIT?", style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface, letterSpacing: -0.3)),
-                  const SizedBox(height: 16),
-                  Row(
+              // ──── Internship Programs Section ────
+              if (internshipCourses.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                    child: _buildSectionHeader(context, "Internship Programs"),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 310,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: internshipCourses.length,
+                      itemBuilder: (_, i) {
+                        return Padding(
+                          padding: EdgeInsets.only(right: i < internshipCourses.length - 1 ? 16 : 0),
+                          child: _buildCourseCard(context, internshipCourses[i]),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+
+              // ──── Featured badges row ────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _featurePill(context, LucideIcons.award, "Certified"),
-                      const SizedBox(width: 10),
-                      _featurePill(context, LucideIcons.briefcase, "Internship"),
-                      const SizedBox(width: 10),
-                      _featurePill(context, LucideIcons.bookOpen, "Mentors"),
-                      const SizedBox(width: 10),
-                      _featurePill(context, LucideIcons.laptop, "Hands-on"),
+                      Text("Why Choose NLIT?", style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface, letterSpacing: -0.3)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _featurePill(context, LucideIcons.award, "Certified"),
+                          const SizedBox(width: 10),
+                          _featurePill(context, LucideIcons.briefcase, "Internship"),
+                          const SizedBox(width: 10),
+                          _featurePill(context, LucideIcons.bookOpen, "Mentors"),
+                          const SizedBox(width: 10),
+                          _featurePill(context, LucideIcons.laptop, "Hands-on"),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
-        ],
-      ),
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            ],
+          ),
+        );
+      },
     );
   }
 

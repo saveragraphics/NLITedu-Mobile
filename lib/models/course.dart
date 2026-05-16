@@ -55,6 +55,15 @@ class Course {
     if (category.contains('ENGINEERING')) catColor = Colors.indigo;
     if (category.contains('MANAGEMENT')) catColor = Colors.green;
 
+    // Helper to safely parse boolean
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      return false;
+    }
+
     return Course(
       title: map['title'] ?? '',
       description: map['description'] ?? '',
@@ -70,12 +79,12 @@ class Course {
       instructorName: map['instructor_name'] ?? map['instructorName'] ?? 'NLITedu Official',
       instructorImage: map['instructor_image'] ?? map['instructorImage'] ?? 'assets/app_logo.png',
       totalReviews: map['totalReviews'] ?? 1200,
-      isBestseller: map['is_bestseller'] ?? map['isBestseller'] ?? false,
+      isBestseller: parseBool(map['is_bestseller'] ?? map['isBestseller']),
       syllabus: map['syllabus'] != null ? List<String>.from(map['syllabus'] is List ? map['syllabus'] : []) : const [],
       govtPrice: (map['govt_price'] ?? 0).toDouble(),
       pvtPrice: (map['pvt_price'] ?? 0).toDouble(),
       jobPrice: (map['job_price'] ?? 0).toDouble(),
-      isLegacyPricing: map['is_legacy_pricing'] ?? false,
+      isLegacyPricing: parseBool(map['is_legacy_pricing']),
     );
   }
 }
