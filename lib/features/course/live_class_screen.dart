@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'package:screen_protector/screen_protector.dart';
 import '../../models/live_session.dart';
 import '../../providers/live_provider.dart';
 import '../../providers/learning_service.dart';
@@ -39,11 +39,13 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
   }
 
   Future<void> _enableSecureMode() async {
-    await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+    await ScreenProtector.preventScreenshotOn();
+    await ScreenProtector.protectDataOn();
   }
 
   Future<void> _disableSecureMode() async {
-    await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+    await ScreenProtector.preventScreenshotOff();
+    await ScreenProtector.protectDataOff();
   }
 
   Future<void> _initWebView() async {
