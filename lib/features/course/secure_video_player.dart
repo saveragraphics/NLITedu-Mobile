@@ -46,13 +46,11 @@ class _SecureVideoPlayerState extends State<SecureVideoPlayer> {
   Future<void> _setupSecurity() async {
     // Prevent screenshots and screen recording
     await ScreenProtector.preventScreenshotOn();
-    await ScreenProtector.backgroundOnlyOn();
   }
 
   Future<void> _cleanupSecurity() async {
     // Re-enable screenshots when leaving the player
     await ScreenProtector.preventScreenshotOff();
-    await ScreenProtector.backgroundOnlyOff();
   }
 
   @override

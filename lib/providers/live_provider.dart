@@ -26,9 +26,6 @@ class LiveService {
             .toList());
   }
 
-    });
-  }
-
   /// Log student attendance
   Future<void> logAttendance(LiveSession session) async {
     final user = _supabase.auth.currentUser;
