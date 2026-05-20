@@ -127,18 +127,15 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     
     // Check for custom schemes (anything other than http and https)
     final uri = Uri.tryParse(url);
-    if (uri != null && uri.scheme != 'http' && uri.scheme != 'https') {
+    if (uri != null && uri.scheme.isNotEmpty && uri.scheme != 'http' && uri.scheme != 'https') {
       return true;
     }
 
-    // Check for known meeting/external services
-    if (lowerUrl.contains('meet.google.com') ||
-        lowerUrl.contains('zoom.us') ||
-        lowerUrl.contains('teams.microsoft.com') ||
+    // Check for known non-WebView-renderable platforms/stores/chats
+    if (lowerUrl.contains('play.google.com/store') ||
         lowerUrl.contains('chat.whatsapp.com') ||
         lowerUrl.contains('wa.me') ||
-        lowerUrl.contains('t.me') ||
-        lowerUrl.contains('play.google.com/store')) {
+        lowerUrl.contains('t.me')) {
       return true;
     }
     
