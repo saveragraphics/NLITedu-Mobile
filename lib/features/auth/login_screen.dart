@@ -1,10 +1,12 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import '../../core/theme.dart';
 
 /// Stitch 01 Login — Mobile/Tablet optimized, full-screen, no floating
@@ -27,6 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submitAuth() async {
     if (_emailCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty || (_isSignUp && _nameCtrl.text.trim().isEmpty)) {
       _showError("Please fill in all required fields");
+      return;
+    }
+    final emailError = _validateEmail(_emailCtrl.text.trim());
+    if (emailError != null) {
+      _showError(emailError);
       return;
     }
     setState(() => _loading = true);
@@ -157,9 +164,58 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  String? _validateEmail(String email) {
+    if (email.isEmpty) {
+      return "Please enter your email address.";
+    }
+    final cleanEmail = email.trim().toLowerCase();
+    final emailRegex = RegExp(r"^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$");
+    if (!emailRegex.hasMatch(cleanEmail)) {
+      return "Please enter a valid email address.";
+    }
+    if (cleanEmail.endsWith(".con")) {
+      return "Invalid email extension: did you mean '.com' instead of '.con'?";
+    }
+    if (cleanEmail.endsWith(".col") || cleanEmail.endsWith(".cmo") || cleanEmail.endsWith(".cm")) {
+      return "Invalid email extension: did you mean '.com'?";
+    }
+    if (cleanEmail.contains("@gamil.") || cleanEmail.contains("@gmal.") || cleanEmail.contains("@gmaill.")) {
+      return "Invalid email domain: did you mean '@gmail.com'?";
+    }
+    if (cleanEmail.contains("@yaho.")) {
+      return "Invalid email domain: did you mean '@yahoo.com'?";
+    }
+    return null;
+  }
+
   Future<void> _sendResetEmail(String email) async {
+    final validationError = _validateEmail(email);
+    if (validationError != null) {
+      _showError(validationError);
+      return;
+    }
+
     setState(() => _loading = true);
     try {
+      // 1. Verify student registration in the database
+      final response = await http.post(
+        Uri.parse('https://nlitedu.com/api/auth/verify-student'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Failed to verify student credentials.");
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['registered'] != true) {
+        _showError("This email address is not registered as a student.");
+        setState(() => _loading = false);
+        return;
+      }
+
+      // 2. Trigger reset link since registered
       await Supabase.instance.client.auth.resetPasswordForEmail(
         email,
         redirectTo: 'https://nlitedu.com/auth/reset-password',
@@ -168,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
-      _showError(e.toString());
+      _showError(e.toString().replaceAll("Exception: ", ""));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
