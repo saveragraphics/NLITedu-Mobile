@@ -234,7 +234,7 @@ class CourseDetailsScreen extends ConsumerWidget {
                 children: [
                   Text("Official Partner", style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 2),
-                  Text("NLITedu Official", style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+                  Text("NLIT Official", style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
                 ],
               ),
             ),

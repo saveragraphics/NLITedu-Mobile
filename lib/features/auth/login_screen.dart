@@ -282,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 48, height: 48, fit: BoxFit.cover),
                             ),
                             const SizedBox(width: 12),
-                            Text("NLITedu", style: GoogleFonts.plusJakartaSans(
+                            Text("NLIT", style: GoogleFonts.plusJakartaSans(
                               fontSize: 22, fontWeight: FontWeight.w800,
                               color: AppTheme.onSurface, letterSpacing: -1)),
                           ]),
@@ -425,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Footer
                           Center(child: Padding(
                             padding: const EdgeInsets.only(bottom: 16, top: 24),
-                            child: Text("© 2024 NLITedu • Intellectual Growth Reimagined",
+                            child: Text("© 2026 NLIT • Intellectual Growth Reimagined",
                               style: GoogleFonts.inter(fontSize: 10, color: AppTheme.onSurfaceVariant.withOpacity(0.5),
                                 letterSpacing: 0.5)),
                           )),

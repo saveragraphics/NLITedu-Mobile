@@ -96,10 +96,17 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
             liveSessionsAsync.when(
               data: (sessions) {
                 if (sessions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                
+                final courses = enrolledCoursesAsync.value ?? [];
+                String? imageUrl;
+                try {
+                  imageUrl = courses.firstWhere((c) => c.title == sessions.first.courseTitle).imageUrl;
+                } catch (_) {}
+
                 return SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-                    child: _buildLivePriorityCard(context, sessions.first),
+                    child: _buildLivePriorityCard(context, sessions.first, imageUrl),
                   ),
                 );
               },
@@ -263,13 +270,21 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     );
   }
 
-  Widget _buildLivePriorityCard(BuildContext context, LiveSession session) {
+  Widget _buildLivePriorityCard(BuildContext context, LiveSession session, String? imageUrl) {
     return Container(
       padding: const EdgeInsets.all(28),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: const Color(0xFF130F1E),
         borderRadius: BorderRadius.circular(36),
         border: Border.all(color: Colors.red.withOpacity(0.3), width: 2),
+        image: imageUrl != null 
+            ? DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.7), BlendMode.darken),
+              )
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,13 +293,26 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
             children: [
                _liveBadge(),
                const Spacer(),
-               const Icon(LucideIcons.radio, color: Colors.red, size: 20),
+               Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                 decoration: BoxDecoration(
+                   color: Colors.black45,
+                   borderRadius: BorderRadius.circular(8),
+                 ),
+                 child: Row(
+                   children: [
+                     const Icon(LucideIcons.monitorPlay, color: Colors.white, size: 14),
+                     const SizedBox(width: 6),
+                     Text("HD Preview", style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                   ],
+                 ),
+               ),
             ],
           ),
           const SizedBox(height: 20),
           Text(session.courseTitle, style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2)),
           const SizedBox(height: 8),
-          Text("Join the interactive classroom now.", style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
+          Text("Join the interactive classroom now.", style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity, height: 56,

@@ -9,6 +9,9 @@ import '../../models/course.dart';
 import '../../models/learning_models.dart';
 import '../../providers/learning_service.dart';
 import '../course/secure_video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../profile/profile_provider.dart';
 
 class CourseContentView extends ConsumerWidget {
   final Course course;
@@ -19,6 +22,7 @@ class CourseContentView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final recordingsAsync = ref.watch(courseRecordingsProvider(course.title));
+    final profile = ref.watch(profileProvider);
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -114,6 +118,11 @@ class CourseContentView extends ConsumerWidget {
                             final r = recordings[index];
                             final date = DateTime.tryParse(r.recordedAt) ?? DateTime.now();
                             
+                            final videoId = YoutubePlayer.convertUrlToId(r.videoUrl);
+                            final thumbnailUrl = videoId != null 
+                                ? 'https://img.youtube.com/vi/$videoId/maxresdefault.jpg'
+                                : null;
+
                             return GestureDetector(
                               onTap: () {
                                 Navigator.of(context, rootNavigator: true).push(
@@ -126,56 +135,65 @@ class CourseContentView extends ConsumerWidget {
                                 );
                               },
                               child: Container(
-                                width: 220,
+                                width: 240,
                                 margin: const EdgeInsets.only(right: 16),
-                                padding: const EdgeInsets.all(16),
+                                clipBehavior: Clip.antiAlias,
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.surfaceContainerLowest,
                                   borderRadius: BorderRadius.circular(24),
                                   border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                                  image: thumbnailUrl != null ? DecorationImage(
+                                    image: NetworkImage(thumbnailUrl),
+                                    fit: BoxFit.cover,
+                                    colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
+                                  ) : null,
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        DateFormat('dd MMM yyyy').format(date),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w800,
-                                          color: theme.colorScheme.primary,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: thumbnailUrl != null ? Colors.black45 : theme.colorScheme.primary.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          DateFormat('dd MMM yyyy').format(date),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: thumbnailUrl != null ? Colors.white : theme.colorScheme.primary,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      r.topic,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
+                                      const Spacer(),
+                                      Text(
+                                        r.topic,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: thumbnailUrl != null ? Colors.white : theme.colorScheme.onSurface,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        const Icon(LucideIcons.play, size: 14, color: AppTheme.primary),
-                                        const SizedBox(width: 6),
-                                        Text("Watch Class", 
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12, 
-                                            fontWeight: FontWeight.w700, 
-                                            color: AppTheme.primary
-                                          )),
-                                      ],
-                                    ),
-                                  ],
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Icon(LucideIcons.play, size: 14, color: thumbnailUrl != null ? Colors.white : AppTheme.primary),
+                                          const SizedBox(width: 6),
+                                          Text("Watch Class in HD", 
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12, 
+                                              fontWeight: FontWeight.w700, 
+                                              color: thumbnailUrl != null ? Colors.white : AppTheme.primary
+                                            )),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
@@ -245,7 +263,24 @@ class CourseContentView extends ConsumerWidget {
                       style: GoogleFonts.inter(fontSize: 13, color: theme.colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final name = profile?.fullName ?? "Student";
+                        final email = profile?.email ?? "Not provided";
+                        final courseName = course.title;
+                        final message = "Hello Team,\n\nMy name is $name.\nEmail: $email\nCourse: $courseName\n\nI need help with...";
+                        final encodedMsg = Uri.encodeComponent(message);
+                        final uri = Uri.parse("https://wa.me/918092378320?text=$encodedMsg");
+                        
+                        try {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Could not open WhatsApp")),
+                            );
+                          }
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,

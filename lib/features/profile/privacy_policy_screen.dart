@@ -46,14 +46,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(100)),
-                  child: Text("NLITEDU", style: GoogleFonts.inter(
+                  child: Text("NLIT", style: GoogleFonts.inter(
                     fontSize: 10, fontWeight: FontWeight.w700, color: theme.colorScheme.onPrimary, letterSpacing: 1.5)),
                 ),
                 const SizedBox(height: 12),
                 Text("Privacy Policy", style: GoogleFonts.plusJakartaSans(
                   fontSize: 32, fontWeight: FontWeight.w800, color: theme.colorScheme.onPrimary)),
                 const SizedBox(height: 6),
-                Text("Last updated: October 24, 2024", style: GoogleFonts.inter(
+                Text("Last updated: May 22, 2026", style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: theme.colorScheme.onPrimary.withOpacity(0.8))),
               ]),
             ),
@@ -62,7 +62,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             // Introduction
             _sectionTitle(context, "Introduction"),
             const SizedBox(height: 12),
-            _bodyText(context, "At NLITedu, we believe education is a fundamental human right, and so is privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you use our educational platform."),
+            _bodyText(context, "At NLIT, we believe education is a fundamental human right, and so is privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you use our educational platform."),
             const SizedBox(height: 8),
             _bodyText(context, "We are committed to transparency and clarity. This document is designed to be readable, skipping the dense legal jargon wherever possible while maintaining the rigorous protections your data deserves."),
             const SizedBox(height: 32),
@@ -153,7 +153,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Text("© 2026 NLITedu. All rights reserved.",
+                  Text("© 2026 NLIT. All rights reserved.",
                     style: GoogleFonts.inter(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 12),
                   RichText(

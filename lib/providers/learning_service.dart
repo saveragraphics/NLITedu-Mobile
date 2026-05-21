@@ -11,12 +11,17 @@ class LearningService {
     final user = _supabase.auth.currentUser;
     if (user == null) return [];
 
-    final response = await _supabase
-        .from('certificates')
-        .select()
-        .eq('user_email', user.email!);
-    
-    return (response as List).map((json) => Certification.fromJson(json)).toList();
+    try {
+      final response = await _supabase
+          .from('certificates')
+          .select()
+          .eq('user_email', user.email!);
+      
+      return (response as List).map((json) => Certification.fromJson(json)).toList();
+    } catch (e) {
+      // If the table doesn't exist or there's an error, return empty list to show empty state
+      return [];
+    }
   }
 
   /// Fetch user's weekly goal

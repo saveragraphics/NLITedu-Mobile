@@ -1,21 +1,24 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme.dart';
+import '../../core/notification_service.dart';
 
-/// Stitch 01 Tabs Layout — Glass nav with correct tab order
-class TabsLayout extends StatelessWidget {
+/// Stitch 01 Tabs Layout — Glass nav with notification badge
+class TabsLayout extends ConsumerWidget {
   final Widget child;
   const TabsLayout({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final user = Supabase.instance.client.auth.currentUser;
     final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
+    final unreadAsync = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
       body: Stack(
@@ -53,9 +56,48 @@ class TabsLayout extends StatelessWidget {
                           fontSize: 18, fontWeight: FontWeight.w800,
                           color: theme.colorScheme.primary, letterSpacing: -0.5)),
                       ]),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(LucideIcons.bell, size: 22, color: theme.colorScheme.onSurfaceVariant),
+                      // Bell icon with notification badge
+                      GestureDetector(
+                        onTap: () => context.push('/notifications'),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 44, height: 44,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(LucideIcons.bell, size: 22, color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                            // Red badge for unread notifications
+                            unreadAsync.when(
+                              data: (count) {
+                                if (count <= 0) return const SizedBox.shrink();
+                                return Positioned(
+                                  top: -2, right: -2,
+                                  child: Container(
+                                    width: 20, height: 20,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEF4444),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: theme.colorScheme.surface, width: 2),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        count > 9 ? '9+' : '$count',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

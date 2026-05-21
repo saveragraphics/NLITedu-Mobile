@@ -21,6 +21,7 @@ import '../models/course.dart';
 import '../models/live_session.dart';
 import '../models/quiz_models.dart';
 import '../features/course/live_class_screen.dart';
+import '../features/dashboard/notification_center_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -92,6 +93,11 @@ final router = GoRouter(
         }
         return const Scaffold(body: Center(child: Text('Session data missing')));
       },
+    ),
+    GoRoute(
+      path: '/notifications',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NotificationCenterScreen(),
     ),
     GoRoute(
       path: '/quiz',

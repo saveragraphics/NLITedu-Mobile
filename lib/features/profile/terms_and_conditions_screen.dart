@@ -45,14 +45,14 @@ class TermsAndConditionsScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(100)),
-                  child: Text("NLITEDU", style: GoogleFonts.inter(
+                  child: Text("NLIT", style: GoogleFonts.inter(
                     fontSize: 10, fontWeight: FontWeight.w700, color: theme.colorScheme.onPrimary, letterSpacing: 1.5)),
                 ),
                 const SizedBox(height: 12),
                 Text("Terms of Service", style: GoogleFonts.plusJakartaSans(
                   fontSize: 32, fontWeight: FontWeight.w800, color: theme.colorScheme.onPrimary)),
                 const SizedBox(height: 6),
-                Text("Last updated: October 24, 2024", style: GoogleFonts.inter(
+                Text("Last updated: May 22, 2026", style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: theme.colorScheme.onPrimary.withOpacity(0.8))),
               ]),
             ),
@@ -61,7 +61,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             // Introduction
             _sectionTitle(context, "1. Acceptance of Terms"),
             const SizedBox(height: 12),
-            _bodyText(context, "By accessing or using the NLITedu platform (the \"Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."),
+            _bodyText(context, "By accessing or using the NLIT platform (the \"Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."),
             const SizedBox(height: 8),
             _bodyText(context, "These Terms apply to all visitors, users, and others who access or use the Service. We reserve the right, at our sole discretion, to modify or replace these Terms at any time."),
             const SizedBox(height: 32),
@@ -97,7 +97,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
               ),
               child: Column(children: [
                 _numberedItem(context, "01", "Intellectual Property",
-                  "The Service and its original content, features and functionality are and will remain the exclusive property of NLITedu and its licensors."),
+                  "The Service and its original content, features and functionality are and will remain the exclusive property of NLIT and its licensors."),
                 const SizedBox(height: 20),
                 _numberedItem(context, "02", "Prohibited Uses",
                   "You agree not to use the Service in any way that violates any applicable national or international law or regulation, or to engage in any conduct that restricts or inhibits anyone's use."),
@@ -131,7 +131,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Text("© 2026 NLITedu. All rights reserved.",
+                  Text("© 2026 NLIT. All rights reserved.",
                     style: GoogleFonts.inter(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 12),
                   RichText(

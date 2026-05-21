@@ -199,7 +199,7 @@ class InstructorSpotlightCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("NLITedu Official", style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
+                  Text("NLIT Official", style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
                   Text("Expert Academic Team", style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
                 ],
               ),
