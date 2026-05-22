@@ -51,6 +51,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   final _marks12Controller = TextEditingController();
   final _marksSemController = TextEditingController();
   String? _selectedCourse;
+  String? _duration;
 
   final List<String> _courseOptions = [
     "AutoCAD 2D & 3D Design",
@@ -219,10 +220,8 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         _collegeType != null &&
         _state != null &&
         _marks10Controller.text.isNotEmpty &&
-        _marksSemController.text.isNotEmpty;
-    if (_isCollegeStudent) {
-      return baseComplete && _collegeIdFile != null;
-    }
+        _marksSemController.text.isNotEmpty &&
+        (!widget.course.isInternship || _duration != null);
     return baseComplete;
   }
 
@@ -261,11 +260,6 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         urlSem = await service.uploadToCloudinary(_marksheetSem!);
       }
 
-      // Upload College ID if present
-      String? collegeIdUrl;
-      if (_collegeIdFile != null) {
-        collegeIdUrl = await service.uploadToCloudinary(_collegeIdFile!);
-      }
 
       // 2. Prepare enrollment data — must match website columns exactly
       final user = Supabase.instance.client.auth.currentUser;
@@ -290,7 +284,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'marksSem': _marksSemController.text,
         'marksheet12Url': url12,
         'marksheetSemUrl': urlSem,
-        'collegeIdUrl': collegeIdUrl,
+        'duration': widget.course.isInternship ? _duration : null,
         'user_id': user?.id,
       };
 
@@ -474,15 +468,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                         (val) => setState(() => _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job')),
                         value: _collegeType == 'govt' ? 'Government' : (_collegeType == 'private' ? 'Private' : (_collegeType == 'job' ? 'Job Professional' : null)),
                       ),
-                      if (_isCollegeStudent) ...[
-                        const SizedBox(height: 4),
-                        _buildFileUpload(
-                          'Upload College ID (Max 200KB, JPG/PNG) *',
-                          _collegeIdFile,
-                          _pickCollegeId,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
+
                        _buildDropdownField(
                         'State', 
                         _states, 
@@ -495,6 +481,13 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                           _courseOptions, 
                           (val) => setState(() => _selectedCourse = val),
                           value: _selectedCourse,
+                        ),
+                      if (widget.course.isInternship)
+                        _buildDropdownField(
+                          'Internship Duration', 
+                          ['2 Weeks', '4 Weeks', '6 Weeks'], 
+                          (val) => setState(() => _duration = val),
+                          value: _duration,
                         ),
                       _buildTextField(_messageController, 'Message (Optional)', LucideIcons.messageCircle, required: false),
                     ],

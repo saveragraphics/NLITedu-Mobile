@@ -170,7 +170,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
               ),
               child: TextField(
                 onChanged: (v) => setState(() => _searchQuery = v),
-                style: GoogleFonts.inter(color: Colors.white),
+                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   hintText: "Search courses, topics...",
                   hintStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.5)),
