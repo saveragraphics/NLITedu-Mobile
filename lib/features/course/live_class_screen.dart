@@ -87,6 +87,11 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
+      ..setUserAgent(
+        (_shouldUseDesktopAgent(url))
+            ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            : null,
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
@@ -142,6 +147,13 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     return false;
   }
 
+  bool _shouldUseDesktopAgent(String url) {
+    final lowerUrl = url.toLowerCase();
+    // Force desktop agent for WebRTC conferencing sites (like Webex and Zoom) 
+    // to prevent them from blocking the mobile webview and forcing app downloads.
+    return lowerUrl.contains('webex.com') || lowerUrl.contains('zoom.us');
+  }
+
   String? _convertIntentToHttps(String url) {
     if (!url.startsWith('intent://')) return null;
     
@@ -193,6 +205,7 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     final session = widget.session;
     final isGoogleMeet = session.sessionUrl.toLowerCase().contains('meet.google.com');
     final isZoom = session.sessionUrl.toLowerCase().contains('zoom.us');
+    final isWebex = session.sessionUrl.toLowerCase().contains('webex.com');
     
     return Container(
       width: double.infinity,
@@ -214,7 +227,7 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
               _LiveClassPulsingIcon(
                 icon: isGoogleMeet 
                     ? LucideIcons.video 
-                    : (isZoom ? LucideIcons.video : LucideIcons.externalLink),
+                    : (isZoom || isWebex ? LucideIcons.video : LucideIcons.externalLink),
                 color: const Color(0xFFEAB308),
               ),
               const SizedBox(height: 32),
@@ -310,7 +323,7 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
                         Text(
                           isGoogleMeet 
                               ? "Open Google Meet" 
-                              : (isZoom ? "Open Zoom" : "Join Live Class"),
+                              : (isZoom ? "Open Zoom" : (isWebex ? "Open Webex" : "Join Live Class")),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
