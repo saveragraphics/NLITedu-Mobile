@@ -97,8 +97,23 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
           onPageStarted: (String url) {
             setState(() => _isLoading = true);
           },
-          onPageFinished: (String url) {
+          onPageFinished: (String url) async {
             setState(() => _isLoading = false);
+            // Fix Webex Desktop View scaling on mobile screens
+            if (url.toLowerCase().contains('webex.com')) {
+              await _controller.runJavaScript('''
+                if (!document.querySelector('meta[name="viewport"]')) {
+                  var meta = document.createElement('meta');
+                  meta.name = 'viewport';
+                  meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
+                  document.getElementsByTagName('head')[0].appendChild(meta);
+                } else {
+                  document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+                }
+                document.body.style.minWidth = '100vw';
+                document.body.style.overflowX = 'hidden';
+              ''');
+            }
           },
           onNavigationRequest: (NavigationRequest request) {
             final requestUrl = request.url;
