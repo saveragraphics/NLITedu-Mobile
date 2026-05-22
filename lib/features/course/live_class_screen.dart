@@ -87,33 +87,13 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
-      ..setUserAgent(
-        (_shouldUseDesktopAgent(url))
-            ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            : null,
-      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
             setState(() => _isLoading = true);
           },
-          onPageFinished: (String url) async {
+          onPageFinished: (String url) {
             setState(() => _isLoading = false);
-            // Fix Webex Desktop View scaling on mobile screens
-            if (url.toLowerCase().contains('webex.com')) {
-              await _controller.runJavaScript('''
-                if (!document.querySelector('meta[name="viewport"]')) {
-                  var meta = document.createElement('meta');
-                  meta.name = 'viewport';
-                  meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
-                  document.getElementsByTagName('head')[0].appendChild(meta);
-                } else {
-                  document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
-                }
-                document.body.style.minWidth = '100vw';
-                document.body.style.overflowX = 'hidden';
-              ''');
-            }
           },
           onNavigationRequest: (NavigationRequest request) {
             final requestUrl = request.url;
@@ -160,13 +140,6 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     }
     
     return false;
-  }
-
-  bool _shouldUseDesktopAgent(String url) {
-    final lowerUrl = url.toLowerCase();
-    // Force desktop agent for WebRTC conferencing sites (like Webex and Zoom) 
-    // to prevent them from blocking the mobile webview and forcing app downloads.
-    return lowerUrl.contains('webex.com') || lowerUrl.contains('zoom.us');
   }
 
   String? _convertIntentToHttps(String url) {
@@ -220,7 +193,6 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     final session = widget.session;
     final isGoogleMeet = session.sessionUrl.toLowerCase().contains('meet.google.com');
     final isZoom = session.sessionUrl.toLowerCase().contains('zoom.us');
-    final isWebex = session.sessionUrl.toLowerCase().contains('webex.com');
     
     return Container(
       width: double.infinity,
@@ -242,7 +214,7 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
               _LiveClassPulsingIcon(
                 icon: isGoogleMeet 
                     ? LucideIcons.video 
-                    : (isZoom || isWebex ? LucideIcons.video : LucideIcons.externalLink),
+                    : (isZoom ? LucideIcons.video : LucideIcons.externalLink),
                 color: const Color(0xFFEAB308),
               ),
               const SizedBox(height: 32),
@@ -338,7 +310,7 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
                         Text(
                           isGoogleMeet 
                               ? "Open Google Meet" 
-                              : (isZoom ? "Open Zoom" : (isWebex ? "Open Webex" : "Join Live Class")),
+                              : (isZoom ? "Open Zoom" : "Join Live Class"),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
