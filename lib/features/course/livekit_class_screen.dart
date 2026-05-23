@@ -24,14 +24,12 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> _messages = [];
-  RealtimeChannel? _chatSubscription;
 
   @override
   void initState() {
     super.initState();
     _room = Room();
     _connectToLiveKit();
-    _setupSupabaseChat();
   }
 
   String get _roomName {
@@ -71,52 +69,32 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
         _listener!.on<RoomEvent>((event) {
           if (mounted) setState(() {});
         });
+        _listener!.on<DataReceivedEvent>((event) {
+          if (event.topic == 'lk-chat-topic') {
+            try {
+              final payload = utf8.decode(event.data);
+              final msgData = jsonDecode(payload);
+              
+              if (mounted) {
+                setState(() {
+                  _messages.add({
+                    'sender_name': event.participant?.identity ?? 'Instructor',
+                    'message': msgData['message'] ?? '',
+                  });
+                });
+                _scrollToBottom();
+              }
+            } catch (e) {
+              print('Error decoding chat message: $e');
+            }
+          }
+        });
       } else {
         print('Failed to fetch token: ${response.body}');
       }
     } catch (e) {
       print('Error connecting to LiveKit: $e');
     }
-  }
-
-  void _setupSupabaseChat() async {
-    final channelName = _roomName; // Using parsed session URL as channel name
-    
-    // Fetch existing messages
-    final data = await Supabase.instance.client
-        .from('live_chat_messages')
-        .select('*')
-        .eq('channel_name', channelName)
-        .order('created_at', ascending: true);
-        
-    if (mounted) {
-      setState(() {
-        _messages = List<Map<String, dynamic>>.from(data);
-      });
-      _scrollToBottom();
-    }
-
-    _chatSubscription = Supabase.instance.client
-        .channel('public:live_chat_messages')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.insert,
-          schema: 'public',
-          table: 'live_chat_messages',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'channel_name',
-            value: channelName,
-          ),
-          callback: (payload) {
-            if (mounted) {
-              setState(() {
-                _messages.add(payload.newRecord);
-              });
-              _scrollToBottom();
-            }
-          },
-        )
-        .subscribe();
   }
 
   Future<void> _sendMessage() async {
@@ -128,11 +106,31 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
     final user = Supabase.instance.client.auth.currentUser;
     final senderName = user?.userMetadata?['full_name'] ?? user?.email ?? 'Student';
     
-    await Supabase.instance.client.from('live_chat_messages').insert({
-      'channel_name': _roomName,
-      'sender_name': senderName,
-      'message': text,
+    // Add locally immediately
+    setState(() {
+      _messages.add({
+        'sender_name': senderName,
+        'message': text,
+      });
     });
+    _scrollToBottom();
+    
+    // Send to LiveKit room
+    try {
+      final payload = jsonEncode({
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'message': text,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      
+      await _room.localParticipant?.publishData(
+        utf8.encode(payload),
+        reliable: true,
+        topic: 'lk-chat-topic',
+      );
+    } catch (e) {
+      print('Error sending LiveKit data: $e');
+    }
   }
 
   void _scrollToBottom() {
@@ -149,7 +147,6 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
   @override
   void dispose() {
-    _chatSubscription?.unsubscribe();
     _listener?.dispose();
     _room.disconnect();
     _chatController.dispose();
@@ -349,7 +346,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final msg = _messages[index];
-                          final isInstructor = msg['sender_name'] == 'Instructor (Admin)';
+                          final isInstructor = msg['sender_name'] == 'Instructor' || msg['sender_name'].toString().toLowerCase().contains('instructor');
                           
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
