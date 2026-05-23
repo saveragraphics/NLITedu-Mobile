@@ -159,15 +159,22 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Find instructor's video track
-    VideoTrack? instructorVideoTrack;
+    // Find instructor's video and screen share tracks
+    VideoTrack? cameraTrack;
+    VideoTrack? screenShareTrack;
     bool isInstructorPresent = _room.remoteParticipants.isNotEmpty;
     
     for (var participant in _room.remoteParticipants.values) {
       for (var publication in participant.videoTrackPublications) {
         if (publication.track != null) {
-          instructorVideoTrack = publication.track as VideoTrack;
-          break;
+          if (publication.source == TrackSource.screenShareVideo) {
+            screenShareTrack = publication.track as VideoTrack;
+          } else if (publication.source == TrackSource.camera) {
+            cameraTrack = publication.track as VideoTrack;
+          } else {
+            // Fallback for unknown sources
+            cameraTrack ??= publication.track as VideoTrack;
+          }
         }
       }
     }
@@ -238,10 +245,19 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                   border: Border.all(color: Colors.white12),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: _isConnected
-                    ? (instructorVideoTrack != null 
-                        ? VideoTrackRenderer(instructorVideoTrack) 
-                        : Center(
+                child: !_isConnected
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Colors.blue),
+                            SizedBox(height: 16),
+                            Text('Connecting to server...', style: TextStyle(color: Colors.white54)),
+                          ]
+                        ),
+                      )
+                    : (cameraTrack == null && screenShareTrack == null)
+                        ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -260,17 +276,40 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                                 ),
                               ],
                             ),
-                          ))
-                    : const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(color: Colors.blue),
-                            SizedBox(height: 16),
-                            Text('Connecting to server...', style: TextStyle(color: Colors.white54)),
-                          ]
-                        ),
-                      ),
+                          )
+                        : Stack(
+                            children: [
+                              // Main Video (Screen Share has priority, otherwise Camera)
+                              Positioned.fill(
+                                child: VideoTrackRenderer(
+                                  screenShareTrack ?? cameraTrack!,
+                                ),
+                              ),
+                              // PiP Camera (if Screen Share is main and Camera is also on)
+                              if (screenShareTrack != null && cameraTrack != null)
+                                Positioned(
+                                  bottom: 16,
+                                  right: 16,
+                                  width: 100,
+                                  height: 140,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white24, width: 2),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.5),
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: VideoTrackRenderer(cameraTrack!),
+                                  ),
+                                ),
+                            ],
+                          ),
               ),
             ),
             
