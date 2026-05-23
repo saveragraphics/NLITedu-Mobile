@@ -197,25 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _loading = true);
     try {
-      // 1. Verify student registration in the database
-      final response = await http.post(
-        Uri.parse('https://nlitedu.com/api/auth/verify-student'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception("Failed to verify student credentials.");
-      }
-
-      final data = jsonDecode(response.body);
-      if (data['registered'] != true) {
-        _showError("This email address is not registered as a student.");
-        setState(() => _loading = false);
-        return;
-      }
-
-      // 2. Trigger reset link since registered
+      // Trigger reset link directly (Supabase securely handles user existence checks)
       await Supabase.instance.client.auth.resetPasswordForEmail(
         email,
         redirectTo: 'https://nlitedu.com/auth/reset-password',
