@@ -21,7 +21,7 @@ import '../models/course.dart';
 import '../models/live_session.dart';
 import '../models/quiz_models.dart';
 import '../features/course/live_class_screen.dart';
-import '../features/course/agora_live_class_screen.dart';
+import '../features/course/livekit_class_screen.dart';
 import '../features/dashboard/notification_center_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -91,8 +91,8 @@ final router = GoRouter(
       builder: (context, state) {
         if (state.extra is LiveSession) {
           final session = state.extra as LiveSession;
-          if (session.sessionUrl.startsWith('agora://')) {
-            return AgoraLiveClassScreen(session: session);
+          if (session.sessionUrl.startsWith('agora://') || session.sessionUrl.startsWith('livekit://')) {
+            return LivekitClassScreen(session: session);
           }
           return LiveClassScreen(session: session);
         }
