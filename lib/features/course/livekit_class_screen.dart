@@ -158,7 +158,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
     // Find instructor's video track
     VideoTrack? instructorVideoTrack;
     for (var participant in _room.remoteParticipants.values) {
-      for (var publication in participant.videoTrackPublications.values) {
+      for (var publication in participant.videoTrackPublications) {
         if (publication.track != null) {
           instructorVideoTrack = publication.track as VideoTrack;
           break;
@@ -186,7 +186,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.session.title,
+                          widget.session.courseTitle,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
