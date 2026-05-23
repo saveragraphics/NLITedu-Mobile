@@ -41,7 +41,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
       
       // Since emulator maps 10.0.2.2 to localhost, we use it to hit the Next.js API
       // If deployed, this should point to the production API (e.g. https://nlitedu.com/api/livekit)
-      final tokenUrl = Uri.parse('http://10.0.2.2:3000/api/livekit?room=${widget.session.id}&username=$username');
+      final tokenUrl = Uri.parse('https://www.nlitedu.com/api/livekit?room=${widget.session.id}&username=$username');
       final response = await http.get(tokenUrl);
       
       if (response.statusCode == 200) {
