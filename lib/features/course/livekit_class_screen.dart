@@ -157,6 +157,8 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   Widget build(BuildContext context) {
     // Find instructor's video track
     VideoTrack? instructorVideoTrack;
+    bool isInstructorPresent = _room.remoteParticipants.isNotEmpty;
+    
     for (var participant in _room.remoteParticipants.values) {
       for (var publication in participant.videoTrackPublications) {
         if (publication.track != null) {
@@ -198,16 +200,16 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                             Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
+                              decoration: BoxDecoration(
+                                color: _isConnected ? Colors.red : Colors.orange,
                                 shape: BoxShape.circle,
                               ),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               _isConnected ? 'LIVE' : 'CONNECTING...',
-                              style: const TextStyle(
-                                color: Colors.red,
+                              style: TextStyle(
+                                color: _isConnected ? Colors.red : Colors.orange,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -235,13 +237,36 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                 child: _isConnected
                     ? (instructorVideoTrack != null 
                         ? VideoTrackRenderer(instructorVideoTrack) 
-                        : const Center(
-                            child: Text(
-                              'Waiting for instructor to start video...',
-                              style: TextStyle(color: Colors.white54),
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isInstructorPresent ? LucideIcons.mic : LucideIcons.videoOff,
+                                  color: Colors.white54,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  isInstructorPresent 
+                                      ? 'Instructor\'s camera is off.\nListening to audio...' 
+                                      : 'Waiting for instructor to go live...',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.white54, fontSize: 16),
+                                ),
+                              ],
                             ),
                           ))
-                    : const Center(child: CircularProgressIndicator(color: Colors.blue)),
+                    : const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Colors.blue),
+                            SizedBox(height: 16),
+                            Text('Connecting to server...', style: TextStyle(color: Colors.white54)),
+                          ]
+                        ),
+                      ),
               ),
             ),
             
