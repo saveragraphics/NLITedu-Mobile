@@ -34,6 +34,10 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
     _setupSupabaseChat();
   }
 
+  String get _roomName {
+    return widget.session.sessionUrl.replaceAll('livekit://', '').replaceAll('agora://', '');
+  }
+
   Future<void> _connectToLiveKit() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
@@ -41,7 +45,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
       
       // Since emulator maps 10.0.2.2 to localhost, we use it to hit the Next.js API
       // If deployed, this should point to the production API (e.g. https://nlitedu.com/api/livekit)
-      final tokenUrl = Uri.parse('https://www.nlitedu.com/api/livekit?room=${widget.session.id}&username=$username');
+      final tokenUrl = Uri.parse('https://www.nlitedu.com/api/livekit?room=$_roomName&username=$username');
       final response = await http.get(tokenUrl);
       
       if (response.statusCode == 200) {
@@ -76,7 +80,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   }
 
   void _setupSupabaseChat() async {
-    final channelName = widget.session.id; // Using session ID as channel name
+    final channelName = _roomName; // Using parsed session URL as channel name
     
     // Fetch existing messages
     final data = await Supabase.instance.client
@@ -125,7 +129,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
     final senderName = user?.userMetadata?['full_name'] ?? user?.email ?? 'Student';
     
     await Supabase.instance.client.from('live_chat_messages').insert({
-      'channel_name': widget.session.id,
+      'channel_name': _roomName,
       'sender_name': senderName,
       'message': text,
     });
