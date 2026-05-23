@@ -21,6 +21,7 @@ import '../models/course.dart';
 import '../models/live_session.dart';
 import '../models/quiz_models.dart';
 import '../features/course/live_class_screen.dart';
+import '../features/course/agora_live_class_screen.dart';
 import '../features/dashboard/notification_center_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -89,7 +90,11 @@ final router = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         if (state.extra is LiveSession) {
-          return LiveClassScreen(session: state.extra as LiveSession);
+          final session = state.extra as LiveSession;
+          if (session.sessionUrl.startsWith('agora://')) {
+            return AgoraLiveClassScreen(session: session);
+          }
+          return LiveClassScreen(session: session);
         }
         return const Scaffold(body: Center(child: Text('Session data missing')));
       },
