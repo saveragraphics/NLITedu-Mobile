@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screen_protector/screen_protector.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/live_session.dart';
 import '../../providers/live_provider.dart';
