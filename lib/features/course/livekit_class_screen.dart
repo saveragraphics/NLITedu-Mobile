@@ -37,6 +37,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _room = Room();
     _setupSecurity();
     _connectToLiveKit();
@@ -196,6 +197,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _cleanupSecurity();
     _listener?.dispose();
     _room.disconnect();
