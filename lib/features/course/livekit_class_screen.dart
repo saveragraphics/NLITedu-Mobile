@@ -5,6 +5,7 @@ import 'package:livekit_client/livekit_client.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:screen_protector/screen_protector.dart';
 import '../../models/live_session.dart';
 
 class LivekitClassScreen extends StatefulWidget {
@@ -37,7 +38,52 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   void initState() {
     super.initState();
     _room = Room();
+    _setupSecurity();
     _connectToLiveKit();
+  }
+
+  // ─── Security: prevent screenshots & screen recording ────────────
+  Future<void> _setupSecurity() async {
+    await ScreenProtector.preventScreenshotOn();
+  }
+
+  Future<void> _cleanupSecurity() async {
+    await ScreenProtector.preventScreenshotOff();
+  }
+
+  // ─── Exit confirmation dialog ────────────────────────────────────
+  Future<bool> _confirmExit() async {
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(LucideIcons.logOut, color: Colors.redAccent, size: 22),
+            SizedBox(width: 10),
+            Text('Leave Live Class?', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'You are currently in a live class. Are you sure you want to leave?',
+          style: TextStyle(color: Colors.white60, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Stay', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(backgroundColor: Colors.redAccent.withOpacity(0.15)),
+            child: const Text('Leave', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldLeave ?? false;
   }
 
   String get _roomName {
@@ -150,6 +196,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
   @override
   void dispose() {
+    _cleanupSecurity();
     _listener?.dispose();
     _room.disconnect();
     _chatController.dispose();
@@ -222,7 +269,11 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
               children: [
                 IconButton(
                   icon: const Icon(LucideIcons.chevronDown, color: Colors.white, size: 22),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () async {
+                    if (await _confirmExit()) {
+                      if (mounted) Navigator.of(context).pop();
+                    }
+                  },
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -545,9 +596,18 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: OrientationBuilder(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        final shouldPop = await _confirmExit();
+        if (shouldPop && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: OrientationBuilder(
         builder: (context, orientation) {
           final isLandscape = orientation == Orientation.landscape;
           final screenSize = MediaQuery.of(context).size;
@@ -637,6 +697,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
           }
         },
       ),
+    ),
     );
   }
 }
