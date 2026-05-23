@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:screen_protector/screen_protector.dart';
 import '../../models/live_session.dart';
+import '../../providers/live_provider.dart';
 
 class LivekitClassScreen extends StatefulWidget {
   final LiveSession session;
@@ -117,6 +118,13 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
         setState(() {
           _isConnected = true;
         });
+
+        // Record student attendance upon successful connection
+        try {
+          await LiveService().logAttendance(widget.session);
+        } catch (e) {
+          print('Error logging attendance: $e');
+        }
 
         _listener!.on<RoomEvent>((event) {
           if (mounted) setState(() {});
