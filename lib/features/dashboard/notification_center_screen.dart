@@ -142,64 +142,82 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
           child: Opacity(opacity: value, child: child),
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+      child: Dismissible(
+        key: ValueKey(item.timestamp.toIso8601String()),
+        direction: DismissDirection.endToStart,
+        onDismissed: (direction) async {
+          await NotificationService().deleteNotification(item.timestamp);
+          ref.invalidate(notificationHistoryProvider);
+        },
+        background: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.redAccent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          alignment: Alignment.centerRight,
+          child: const Icon(LucideIcons.trash2, color: Colors.white),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Type indicator icon
-            Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(
-                color: item.color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Type indicator icon
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(
+                  color: item.color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  item.type == 'live' ? LucideIcons.video
+                      : item.type == 'scheduled' ? LucideIcons.calendar
+                      : LucideIcons.clipboardList,
+                  size: 20, color: item.color,
+                ),
               ),
-              child: Icon(
-                item.type == 'live' ? LucideIcons.video
-                    : item.type == 'scheduled' ? LucideIcons.calendar
-                    : LucideIcons.clipboardList,
-                size: 20, color: item.color,
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: item.color.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6),
+              const SizedBox(width: 14),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: item.color.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(item.label, style: GoogleFonts.inter(
+                            fontSize: 8, fontWeight: FontWeight.w900,
+                            color: item.color, letterSpacing: 1)),
                         ),
-                        child: Text(item.label, style: GoogleFonts.inter(
-                          fontSize: 8, fontWeight: FontWeight.w900,
-                          color: item.color, letterSpacing: 1)),
-                      ),
-                      const Spacer(),
-                      Text(_timeAgo(item.timestamp), style: GoogleFonts.inter(
-                        fontSize: 10, color: theme.colorScheme.onSurfaceVariant)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(item.title, style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 4),
-                  Text(item.body, style: GoogleFonts.inter(
-                    fontSize: 12, color: theme.colorScheme.onSurfaceVariant, height: 1.4)),
-                ],
+                        const Spacer(),
+                        Text(_timeAgo(item.timestamp), style: GoogleFonts.inter(
+                          fontSize: 10, color: theme.colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(item.title, style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+                    const SizedBox(height: 4),
+                    Text(item.body, style: GoogleFonts.inter(
+                      fontSize: 12, color: theme.colorScheme.onSurfaceVariant, height: 1.4)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

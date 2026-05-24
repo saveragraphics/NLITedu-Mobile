@@ -35,6 +35,10 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   // UI overlay visibility (auto-hide controls like YouTube)
   bool _showOverlay = true;
 
+  // Interaction states
+  bool _isHandRaised = false;
+  Map<String, dynamic>? _activePoll;
+
   @override
   void initState() {
     super.initState();
@@ -130,11 +134,11 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
           if (mounted) setState(() {});
         });
         _listener!.on<DataReceivedEvent>((event) {
-          if (event.topic == 'lk-chat-topic') {
-            try {
-              final payload = utf8.decode(event.data);
-              final msgData = jsonDecode(payload);
+          try {
+            final payload = utf8.decode(event.data);
+            final msgData = jsonDecode(payload);
 
+            if (event.topic == 'lk-chat-topic') {
               if (mounted) {
                 setState(() {
                   _messages.add({
@@ -144,9 +148,22 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                 });
                 _scrollToBottom();
               }
-            } catch (e) {
-              print('Error decoding chat message: $e');
+            } else {
+              // Custom interactive payloads (topic is null or empty)
+              if (msgData['action'] == 'START_POLL') {
+                if (mounted) setState(() { _activePoll = msgData['poll']; });
+              } else if (msgData['action'] == 'END_POLL') {
+                if (mounted) setState(() { _activePoll = null; });
+              } else if (msgData['action'] == 'MUTE_MIC') {
+                if (msgData['target'] == _room.localParticipant?.identity) {
+                  _room.localParticipant?.setMicrophoneEnabled(false);
+                }
+              } else if (msgData['action'] == 'LOWER_HAND') {
+                if (mounted) setState(() { _isHandRaised = false; });
+              }
             }
+          } catch (e) {
+            print('Error decoding data channel message: $e');
           }
         });
       } else {
@@ -188,6 +205,28 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
       );
     } catch (e) {
       print('Error sending LiveKit data: $e');
+    }
+  }
+
+  Future<void> _toggleHandRaise() async {
+    setState(() {
+      _isHandRaised = !_isHandRaised;
+    });
+    
+    if (_isConnected && _room.localParticipant != null) {
+      final action = _isHandRaised ? 'RAISE_HAND' : 'LOWER_HAND';
+      final payload = utf8.encode(jsonEncode({'action': action}));
+      await _room.localParticipant?.publishData(payload, reliable: true);
+    }
+  }
+
+  Future<void> _submitPollVote(int optionIndex) async {
+    if (_isConnected && _room.localParticipant != null) {
+      final payload = utf8.encode(jsonEncode({'action': 'POLL_VOTE', 'optionId': optionIndex.toString()}));
+      await _room.localParticipant?.publishData(payload, reliable: true);
+      setState(() {
+        _activePoll = null; // Hide poll after voting
+      });
     }
   }
 
@@ -250,6 +289,61 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
           ),
           clipBehavior: Clip.antiAlias,
           child: VideoTrackRenderer(cameraTrack),
+        ),
+      ),
+    );
+  }
+
+  // ─── Poll Overlay ────────────────────────────────────────────────
+  Widget _buildPollOverlay() {
+    return Positioned(
+      top: 80,
+      left: 16,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A).withOpacity(0.95),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.blueAccent.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10, offset: const Offset(0, 5)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(LucideIcons.barChart2, color: Colors.blueAccent, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _activePoll!['question'] ?? '',
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...List.generate((_activePoll!['options'] as List).length, (index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    foregroundColor: Colors.white,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () => _submitPollVote(index),
+                  child: Text(_activePoll!['options'][index]),
+                ),
+              );
+            }),
+          ],
         ),
       ),
     );
@@ -350,6 +444,14 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                       _isChatVisible = !_isChatVisible;
                     });
                   },
+                ),
+                const SizedBox(width: 24),
+                // Hand Raise toggle
+                _toolbarButton(
+                  icon: LucideIcons.hand,
+                  label: _isHandRaised ? 'Lower Hand' : 'Raise Hand',
+                  isActive: _isHandRaised,
+                  onTap: _toggleHandRaise,
                 ),
                 const SizedBox(width: 24),
                 // Participant count
@@ -601,8 +703,10 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
         ),
       );
     } else {
+      final activeTrack = screenShareTrack ?? cameraTrack!;
       videoContent = VideoTrackRenderer(
-        screenShareTrack ?? cameraTrack!,
+        activeTrack,
+        key: ValueKey(activeTrack.sid),
       );
     }
 
@@ -647,6 +751,9 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
                         // Header overlay
                         _buildFloatingHeader(),
+                        
+                        // Poll Overlay
+                        if (_activePoll != null) _buildPollOverlay(),
 
                         // Bottom toolbar (only when chat hidden to show toggle)
                         if (!_isChatVisible) _buildFloatingToolbar(true),
@@ -688,6 +795,9 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
                         // Floating header
                         _buildFloatingHeader(),
+                        
+                        // Poll Overlay
+                        if (_activePoll != null) _buildPollOverlay(),
 
                         // Bottom toolbar
                         _buildFloatingToolbar(false),

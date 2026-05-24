@@ -12,6 +12,7 @@ import '../../providers/course_provider.dart';
 import '../../providers/live_provider.dart';
 import '../../models/live_session.dart';
 import '../../providers/enrollment_service.dart';
+import 'package:intl/intl.dart';
 
 /// Stitch 01 Dashboard — Enhanced Discover with Hero Section
 class DashboardScreen extends ConsumerWidget {
@@ -436,7 +437,7 @@ class DashboardScreen extends ConsumerWidget {
         ? "${session.scheduledAt!.day}/${session.scheduledAt!.month}"
         : "Soon";
     final timeStr = session.scheduledAt != null 
-        ? "${session.scheduledAt!.hour}:${session.scheduledAt!.minute.toString().padLeft(2, '0')}" 
+        ? DateFormat.jm().format(session.scheduledAt!)
         : "TBD";
 
     return Container(

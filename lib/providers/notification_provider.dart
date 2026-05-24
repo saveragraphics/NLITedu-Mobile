@@ -112,6 +112,11 @@ class NotificationWatcher {
           if (session.scheduledAt!.isAfter(DateTime.now())) {
             _scheduledReminders.add(session.id);
             prefs.setStringList(_scheduledRemindersKey, _scheduledReminders.toList());
+            
+            // Show immediate notification
+            await _notifService.showNewScheduledClassNotification(session);
+            
+            // Schedule the reminder for 15 mins before
             await _notifService.scheduleClassReminder(session);
           }
         }

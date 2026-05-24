@@ -124,6 +124,41 @@ class NotificationService {
     );
   }
 
+  /// Show an immediate notification that a new class has been scheduled
+  Future<void> showNewScheduledClassNotification(LiveSession session) async {
+    if (session.scheduledAt == null) return;
+    
+    final id = _scheduledBaseId + session.id.hashCode.abs() % 999 + 10000;
+
+    await _plugin.show(
+      id,
+      '📅 New Class Scheduled: ${session.courseTitle}',
+      'A new class is scheduled for ${_formatTime(session.scheduledAt!)}. Tap to view.',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _scheduledChannelId, 'Scheduled Class Reminders',
+          importance: Importance.high,
+          priority: Priority.high,
+          color: const Color(0xFF3B82F6),
+          colorized: true,
+          category: AndroidNotificationCategory.event,
+          styleInformation: BigTextStyleInformation(
+            'Your enrolled class "${session.courseTitle}" has been scheduled for ${_formatTime(session.scheduledAt!)}.',
+            contentTitle: '📅 New Class Scheduled',
+          ),
+        ),
+      ),
+      payload: 'scheduled:${session.id}',
+    );
+
+    await _saveNotificationToHistory(
+      title: '📅 New: ${session.courseTitle}',
+      body: 'Scheduled for ${_formatTime(session.scheduledAt!)}',
+      type: 'scheduled',
+      courseId: session.courseId,
+    );
+  }
+
   /// Schedule a reminder notification before a scheduled class
   Future<void> scheduleClassReminder(LiveSession session, {int minutesBefore = 15}) async {
     if (session.scheduledAt == null) return;
@@ -245,22 +280,55 @@ class NotificationService {
     await prefs.setInt(_unreadCountKey, unread + 1);
   }
 
-  /// Get notification history for the notification center
+  /// Get notification history for the notification center (auto-deletes > 24hrs)
   Future<List<NotificationItem>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final history = prefs.getStringList(_historyKey) ?? [];
     
-    return history.map((entry) {
+    final now = DateTime.now();
+    bool changed = false;
+
+    final List<NotificationItem> validItems = [];
+    final List<String> validHistoryStrings = [];
+
+    for (final entry in history) {
       final parts = entry.split('|');
-      if (parts.length < 5) return null;
-      return NotificationItem(
+      if (parts.length < 5) continue;
+      
+      final timestamp = DateTime.tryParse(parts[4]) ?? now;
+      
+      // Filter out notifications older than 24 hours
+      if (now.difference(timestamp).inHours >= 24) {
+        changed = true;
+        continue;
+      }
+
+      validItems.add(NotificationItem(
         title: parts[0],
         body: parts[1],
         type: parts[2],
         courseId: parts[3],
-        timestamp: DateTime.tryParse(parts[4]) ?? DateTime.now(),
-      );
-    }).whereType<NotificationItem>().toList();
+        timestamp: timestamp,
+      ));
+      validHistoryStrings.add(entry);
+    }
+
+    if (changed) {
+      await prefs.setStringList(_historyKey, validHistoryStrings);
+    }
+
+    return validItems;
+  }
+
+  /// Delete a single notification by matching its timestamp
+  Future<void> deleteNotification(DateTime timestamp) async {
+    final prefs = await SharedPreferences.getInstance();
+    final history = prefs.getStringList(_historyKey) ?? [];
+    
+    final targetStr = timestamp.toIso8601String();
+    history.removeWhere((entry) => entry.contains(targetStr));
+    
+    await prefs.setStringList(_historyKey, history);
   }
 
   /// Get unread notification count

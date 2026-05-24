@@ -24,8 +24,8 @@ class LiveSession {
       courseTitle: json['course_title'] ?? json['course_id'],
       sessionUrl: json['session_url'],
       isLive: json['is_live'] ?? false,
-      startedAt: json['started_at'] != null ? DateTime.parse(json['started_at']) : DateTime.now(),
-      scheduledAt: json['scheduled_at'] != null ? DateTime.parse(json['scheduled_at']) : null,
+      startedAt: json['started_at'] != null ? DateTime.parse(json['started_at']).toLocal() : DateTime.now(),
+      scheduledAt: json['scheduled_at'] != null ? DateTime.parse(json['scheduled_at']).toLocal() : null,
     );
   }
 }
