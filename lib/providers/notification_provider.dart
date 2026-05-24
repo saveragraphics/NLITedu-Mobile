@@ -60,7 +60,7 @@ class NotificationWatcher {
     final enrollments = await _supabase
         .from('enrollments')
         .select('course_title')
-        .eq('email', user.email!);
+        .eq('email', user.email ?? user.phone ?? '');
     
     final enrolledTitles = (enrollments as List)
         .map((e) => (e['course_title'] as String).trim().toLowerCase())

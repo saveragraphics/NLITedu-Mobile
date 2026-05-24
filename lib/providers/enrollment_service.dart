@@ -227,7 +227,7 @@ final isEnrolledProvider = FutureProvider.family<bool, String>((ref, title) asyn
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) return false;
   
-  return ref.read(enrollmentServiceProvider).isUserEnrolled(user.email!, title);
+  return ref.read(enrollmentServiceProvider).isUserEnrolled(user.email ?? user.phone ?? '', title);
 });
 
 // A provider for all user enrollments
@@ -235,7 +235,7 @@ final userEnrollmentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref)
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) return [];
   
-  return ref.read(enrollmentServiceProvider).getUserEnrollments(user.email!);
+  return ref.read(enrollmentServiceProvider).getUserEnrollments(user.email ?? user.phone ?? '');
 });
 
 /// A provider that maps simple enrollment records to full Course objects for valid UI rendering
