@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,12 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   late final Room _room;
   EventsListener<RoomEvent>? _listener;
   bool _isConnected = false;
+  bool _isConnecting = false;
+  bool _isSessionLive = false;
+  bool _classHasStartedOnce = false;
+  String? _connectionError;
+  StreamSubscription<List<Map<String, dynamic>>>? _sessionSubscription;
+  bool _isSessionEndedHandled = false;
 
   // Chat state
   final TextEditingController _chatController = TextEditingController();
@@ -44,8 +51,88 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _room = Room();
+    _isSessionLive = widget.session.isLive;
+    if (_isSessionLive) {
+      _classHasStartedOnce = true;
+    }
     _setupSecurity();
-    _connectToLiveKit();
+    _subscribeToSessionStatus();
+    if (_isSessionLive) {
+      _connectToLiveKit();
+    }
+  }
+
+  void _subscribeToSessionStatus() {
+    _sessionSubscription = Supabase.instance.client
+        .from('live_sessions')
+        .stream(primaryKey: ['id'])
+        .eq('id', widget.session.id)
+        .listen((data) {
+          if (data.isEmpty) {
+            if (_classHasStartedOnce) {
+              _handleSessionEnded();
+            }
+          } else {
+            final session = LiveSession.fromJson(data.first);
+            final wasLive = _isSessionLive;
+            if (mounted) {
+              setState(() {
+                _isSessionLive = session.isLive;
+              });
+            }
+            
+            if (session.isLive) {
+              _classHasStartedOnce = true;
+              if (!_isConnected && !_isConnecting) {
+                _connectToLiveKit();
+              }
+            } else {
+              if (_classHasStartedOnce) {
+                _handleSessionEnded();
+              }
+            }
+          }
+        }, onError: (err) {
+          print('Error in session subscription stream: $err');
+        });
+  }
+
+  void _handleSessionEnded() {
+    if (!mounted || _isSessionEndedHandled) return;
+    _isSessionEndedHandled = true;
+
+    _room.disconnect();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(LucideIcons.info, color: Colors.blueAccent, size: 22),
+            SizedBox(width: 10),
+            Text('Class Ended', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'The live session has been ended by the instructor.',
+          style: TextStyle(color: Colors.white60, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Dismiss dialog
+              if (mounted) {
+                Navigator.of(context).pop(); // Go back to course dashboard
+              }
+            },
+            child: const Text('OK', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ─── Security: prevent screenshots & screen recording ────────────
@@ -97,6 +184,11 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   }
 
   Future<void> _connectToLiveKit() async {
+    if (_isConnected || _isConnecting) return;
+    setState(() {
+      _isConnecting = true;
+      _connectionError = null;
+    });
     try {
       final user = Supabase.instance.client.auth.currentUser;
       final username = user?.userMetadata?['full_name'] ?? user?.email ?? 'Student';
@@ -166,11 +258,23 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
             print('Error decoding data channel message: $e');
           }
         });
+      } else if (response.statusCode == 403) {
+        setState(() {
+          _connectionError = 'This live session is not currently active. Please wait for the instructor.';
+        });
       } else {
-        print('Failed to fetch token: ${response.body}');
+        setState(() {
+          _connectionError = 'Failed to fetch token: ${response.statusCode}';
+        });
       }
     } catch (e) {
-      print('Error connecting to LiveKit: $e');
+      setState(() {
+        _connectionError = 'Failed to connect to LiveKit: $e';
+      });
+    } finally {
+      setState(() {
+        _isConnecting = false;
+      });
     }
   }
 
@@ -246,6 +350,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _cleanupSecurity();
+    _sessionSubscription?.cancel();
     _listener?.dispose();
     _room.disconnect();
     _chatController.dispose();
@@ -670,7 +775,77 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
 
     // The core video widget — no borders, no margins, pure black, full-bleed
     Widget videoContent;
-    if (!_isConnected) {
+    if (!_isSessionLive) {
+      videoContent = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                LucideIcons.clock,
+                color: Colors.blueAccent,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Waiting for Instructor...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'The broadcast has not started yet.',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (_connectionError != null) {
+      videoContent = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              LucideIcons.alertTriangle,
+              color: Colors.redAccent,
+              size: 40,
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                _connectionError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _connectToLiveKit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text('Retry Connection', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    } else if (!_isConnected) {
       videoContent = const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -715,7 +890,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
       onPopInvoked: (didPop) async {
         if (didPop) return;
         final shouldPop = await _confirmExit();
-        if (shouldPop && mounted) {
+        if (shouldPop && context.mounted) {
           Navigator.of(context).pop();
         }
       },
@@ -737,7 +912,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
               children: [
                 // Video section (expands to fill when chat is hidden)
                 Expanded(
-                  flex: _isChatVisible ? 7 : 10,
+                  flex: (_isChatVisible && _isConnected) ? 7 : 10,
                   child: GestureDetector(
                     onTap: () => setState(() => _showOverlay = !_showOverlay),
                     child: Stack(
@@ -746,24 +921,24 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                         Positioned.fill(child: videoContent),
 
                         // Draggable PiP
-                        if (screenShareTrack != null && cameraTrack != null)
-                          _buildDraggablePiP(cameraTrack!, screenSize, true),
+                        if (screenShareTrack != null && cameraTrack != null && _isConnected)
+                          _buildDraggablePiP(cameraTrack, screenSize, true),
 
                         // Header overlay
                         _buildFloatingHeader(),
                         
                         // Poll Overlay
-                        if (_activePoll != null) _buildPollOverlay(),
+                        if (_activePoll != null && _isConnected) _buildPollOverlay(),
 
                         // Bottom toolbar (only when chat hidden to show toggle)
-                        if (!_isChatVisible) _buildFloatingToolbar(true),
+                        if (!_isChatVisible && _isConnected) _buildFloatingToolbar(true),
                       ],
                     ),
                   ),
                 ),
 
                 // Chat panel (animated slide)
-                if (_isChatVisible)
+                if (_isChatVisible && _isConnected)
                   Expanded(
                     flex: 3,
                     child: _buildChatPanel(),
@@ -776,7 +951,7 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
               children: [
                 // Video section (expands fully when chat is hidden)
                 Expanded(
-                  flex: _isChatVisible ? 5 : 10,
+                  flex: (_isChatVisible && _isConnected) ? 5 : 10,
                   child: GestureDetector(
                     onTap: () => setState(() => _showOverlay = !_showOverlay),
                     child: Stack(
@@ -790,24 +965,24 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
                         ),
 
                         // Draggable PiP
-                        if (screenShareTrack != null && cameraTrack != null)
-                          _buildDraggablePiP(cameraTrack!, screenSize, false),
+                        if (screenShareTrack != null && cameraTrack != null && _isConnected)
+                          _buildDraggablePiP(cameraTrack, screenSize, false),
 
                         // Floating header
                         _buildFloatingHeader(),
                         
                         // Poll Overlay
-                        if (_activePoll != null) _buildPollOverlay(),
+                        if (_activePoll != null && _isConnected) _buildPollOverlay(),
 
                         // Bottom toolbar
-                        _buildFloatingToolbar(false),
+                        if (_isConnected) _buildFloatingToolbar(false),
                       ],
                     ),
                   ),
                 ),
 
                 // Chat panel
-                if (_isChatVisible)
+                if (_isChatVisible && _isConnected)
                   Expanded(
                     flex: 5,
                     child: _buildChatPanel(),
