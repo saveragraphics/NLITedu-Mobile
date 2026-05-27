@@ -5,8 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/notification_service.dart';
 import '../models/live_session.dart';
 import '../models/quiz_models.dart';
-import 'live_provider.dart';
-import 'enrollment_service.dart';
+import '../core/utils/supabase_utils.dart';
 
 /// Notification preference keys
 class NotificationPrefs {
@@ -69,10 +68,10 @@ class NotificationWatcher {
     if (enrolledTitles.isEmpty) return;
 
     // Watch live sessions for instant notifications
-    _liveSubscription = _supabase
+    _liveSubscription = retryStreamWithAuth<List<Map<String, dynamic>>>(() => _supabase
         .from('live_sessions')
         .stream(primaryKey: ['id'])
-        .eq('is_live', true)
+        .eq('is_live', true))
         .listen((rows) async {
       final isLiveEnabled = await NotificationPrefs.isEnabled(NotificationPrefs.liveAlerts);
       final isPushEnabled = await NotificationPrefs.isEnabled(NotificationPrefs.pushEnabled);
@@ -92,10 +91,10 @@ class NotificationWatcher {
     });
 
     // Watch upcoming sessions for scheduled reminders
-    _upcomingSubscription = _supabase
+    _upcomingSubscription = retryStreamWithAuth<List<Map<String, dynamic>>>(() => _supabase
         .from('live_sessions')
         .stream(primaryKey: ['id'])
-        .eq('is_live', false)
+        .eq('is_live', false))
         .listen((rows) async {
       final isScheduledEnabled = await NotificationPrefs.isEnabled(NotificationPrefs.scheduledReminders);
       final isPushEnabled = await NotificationPrefs.isEnabled(NotificationPrefs.pushEnabled);

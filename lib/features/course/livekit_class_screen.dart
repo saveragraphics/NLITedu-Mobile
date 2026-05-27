@@ -9,6 +9,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:screen_protector/screen_protector.dart';
 import '../../models/live_session.dart';
 import '../../providers/live_provider.dart';
+import '../../core/utils/supabase_utils.dart';
 
 class LivekitClassScreen extends StatefulWidget {
   final LiveSession session;
@@ -63,10 +64,10 @@ class _LivekitClassScreenState extends State<LivekitClassScreen> {
   }
 
   void _subscribeToSessionStatus() {
-    _sessionSubscription = Supabase.instance.client
+    _sessionSubscription = retryStreamWithAuth<List<Map<String, dynamic>>>(() => Supabase.instance.client
         .from('live_sessions')
         .stream(primaryKey: ['id'])
-        .eq('id', widget.session.id)
+        .eq('id', widget.session.id))
         .listen((data) {
           if (data.isEmpty) {
             if (_classHasStartedOnce) {

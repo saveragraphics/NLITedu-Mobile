@@ -1,29 +1,30 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/live_session.dart';
+import '../core/utils/supabase_utils.dart';
 
 class LiveService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// Stream of active live sessions
   Stream<List<LiveSession>> get activeSessionsStream {
-    return _supabase
+    return retryStreamWithAuth<List<LiveSession>>(() => _supabase
         .from('live_sessions')
         .stream(primaryKey: ['id'])
         .eq('is_live', true)
-        .map((maps) => maps.map((m) => LiveSession.fromJson(m)).toList());
+        .map((maps) => maps.map((m) => LiveSession.fromJson(m)).toList()));
   }
 
   /// Stream of upcoming scheduled sessions
   Stream<List<LiveSession>> get upcomingSessionsStream {
-    return _supabase
+    return retryStreamWithAuth<List<LiveSession>>(() => _supabase
         .from('live_sessions')
         .stream(primaryKey: ['id'])
         .eq('is_live', false)
         .map((maps) => maps
             .map((m) => LiveSession.fromJson(m))
             .where((s) => s.scheduledAt != null && s.scheduledAt!.isAfter(DateTime.now().subtract(const Duration(hours: 1))))
-            .toList());
+            .toList()));
   }
 
   /// Log student attendance

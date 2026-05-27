@@ -45,14 +45,61 @@ class EnrollmentService {
   };
 
   /// Calculate enrollment fee based on college type and course title
-  double calculateFee(String collegeType, String state, {String? courseTitle}) {
-    if (courseTitle != null && coursePricing.containsKey(courseTitle) && courseTitle != 'NLIT Course Enrollment') {
+  double calculateFee(String collegeType, String state, {String? courseTitle, String? duration, String? internshipMode, bool isInternship = false}) {
+    final bool isIntern = isInternship || courseTitle == 'NLIT Course Enrollment' || (courseTitle != null && !coursePricing.containsKey(courseTitle));
+
+    if (isIntern) {
+      if (state == 'Bihar') {
+        final dur = duration ?? '';
+        final mode = internshipMode ?? 'Online';
+
+        if (collegeType == 'govt') {
+          if (mode == 'Online') {
+            if (dur.contains('2')) return 799.0;
+            if (dur.contains('4')) return 999.0;
+            if (dur.contains('6')) return 1199.0;
+            if (dur.contains('8')) return 1399.0;
+            return 999.0; // fallback before selection
+          } else { // Online + Offline or Both
+            if (dur.contains('2')) return 1299.0;
+            if (dur.contains('4')) return 1499.0;
+            if (dur.contains('6')) return 1999.0;
+            if (dur.contains('8')) return 2499.0;
+            return 1499.0; // fallback before selection
+          }
+        }
+        if (collegeType == 'private') {
+          if (mode == 'Online') {
+            if (dur.contains('2')) return 999.0;
+            if (dur.contains('4')) return 1499.0;
+            if (dur.contains('6')) return 1999.0;
+            if (dur.contains('8')) return 2499.0;
+            return 1999.0; // fallback before selection
+          } else { // Online + Offline or Both
+            if (dur.contains('2')) return 1799.0;
+            if (dur.contains('4')) return 1999.0;
+            if (dur.contains('6')) return 2499.0;
+            if (dur.contains('8')) return 2999.0;
+            return 1999.0; // fallback before selection
+          }
+        }
+        if (collegeType == 'job') return 2999.0;
+        return 0.0;
+      }
+
+      // Other States
+      if (collegeType == 'govt') return 1499.0;
+      if (collegeType == 'private') return 1999.0;
+      if (collegeType == 'job') return 2999.0;
+      return 0.0;
+    }
+
+    if (courseTitle != null && coursePricing.containsKey(courseTitle)) {
       return coursePricing[courseTitle]![collegeType] ?? 0.0;
     }
-    // Fallback for internship courses ('NLIT Course Enrollment') or unknown courses
-    if (collegeType == 'govt') {
-      return state == 'Bihar' ? 999.0 : 1499.0;
-    }
+    
+    // Fallback
+    if (collegeType == 'govt') return 1499.0;
     if (collegeType == 'private') return 1999.0;
     if (collegeType == 'job') return 2999.0;
     return 0.0;
@@ -152,10 +199,22 @@ class EnrollmentService {
   /// has no UNIQUE constraint on cf_payment_id (42P10 error).
   /// This matches the website's enrollment form behavior exactly.
   Future<void> savePendingEnrollment(Map<String, dynamic> enrollmentData) async {
-    await _supabase.from('enrollments').insert({
-      ...enrollmentData,
-      'status': 'PENDING',
-    });
+    try {
+      await _supabase.from('enrollments').insert({
+        ...enrollmentData,
+        'status': 'PENDING',
+      });
+    } on PostgrestException catch (e) {
+      if ((e.message.contains('internship_mode') || e.code == '42703') && enrollmentData.containsKey('internship_mode')) {
+        final fallbackData = Map<String, dynamic>.from(enrollmentData)..remove('internship_mode');
+        await _supabase.from('enrollments').insert({
+          ...fallbackData,
+          'status': 'PENDING',
+        });
+      } else {
+        rethrow;
+      }
+    }
   }
 
   /// Confirm payment success in Supabase.

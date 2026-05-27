@@ -52,6 +52,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   final _marksSemController = TextEditingController();
   String? _selectedCourse;
   String? _duration;
+  String? _internshipMode = 'Online';
 
   final List<String> _courseOptions = [
     "AutoCAD 2D & 3D Design",
@@ -221,13 +222,20 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         _state != null &&
         _marks10Controller.text.isNotEmpty &&
         _marksSemController.text.isNotEmpty &&
-        (!widget.course.isInternship || _duration != null);
+        (!widget.course.isInternship || (_duration != null && _internshipMode != null));
     return baseComplete;
   }
 
   double get _currentFee {
     if (_collegeType == null || _state == null) return 0;
-    return ref.read(enrollmentServiceProvider).calculateFee(_collegeType!, _state!, courseTitle: _selectedCourse);
+    return ref.read(enrollmentServiceProvider).calculateFee(
+      _collegeType!, 
+      _state!, 
+      courseTitle: _selectedCourse,
+      duration: _duration,
+      internshipMode: _internshipMode,
+      isInternship: widget.course.isInternship,
+    );
   }
 
   double get _displayPrice {
@@ -278,13 +286,14 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'college_type': _collegeType,
         'state': _state,
         'course_title': _selectedCourse,
-        'message': _messageController.text,
+        'message': widget.course.isInternship && _internshipMode != null ? '[Internship Mode: $_internshipMode] ${_messageController.text}' : _messageController.text,
         'marks10': _marks10Controller.text,
         'marks12': _marks12Controller.text,
         'marksSem': _marksSemController.text,
         'marksheet12Url': url12,
         'marksheetSemUrl': urlSem,
         'duration': widget.course.isInternship ? _duration : null,
+        'internship_mode': widget.course.isInternship ? _internshipMode : null,
         'user_id': user?.id,
       };
 
@@ -484,8 +493,15 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                         ),
                       if (widget.course.isInternship)
                         _buildDropdownField(
+                          'Internship Mode', 
+                          ['Online', 'Online + Offline'], 
+                          (val) => setState(() => _internshipMode = val),
+                          value: _internshipMode,
+                        ),
+                      if (widget.course.isInternship)
+                        _buildDropdownField(
                           'Internship Duration', 
-                          ['2 Weeks', '4 Weeks', '6 Weeks'], 
+                          ['2 Weeks', '4 Weeks', '6 Weeks', '8 Weeks'], 
                           (val) => setState(() => _duration = val),
                           value: _duration,
                         ),

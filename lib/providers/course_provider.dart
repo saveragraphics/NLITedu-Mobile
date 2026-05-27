@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/course.dart';
+import '../core/utils/supabase_utils.dart';
 
 /// Provider that fetches courses dynamically from Supabase.
 /// This allows the app to stay updated without code changes.
@@ -10,15 +11,15 @@ import '../models/course.dart';
 final courseProvider = StreamProvider<List<Course>>((ref) {
   final supabase = Supabase.instance.client;
   
-  // Create a stream from the 'courses' table
-  return supabase
+  // Create a stream from the 'courses' table using retryStreamWithAuth
+  return retryStreamWithAuth<List<Course>>(() => supabase
       .from('courses')
       .stream(primaryKey: ['id'])
       .order('created_at', ascending: true)
       .map((data) {
         if (data.isEmpty) return staticCourses;
         return data.map((map) => Course.fromMap(map)).toList();
-      });
+      }));
 });
 
 /// Hardcoded fallback list to ensure the app works even offline or during migration.

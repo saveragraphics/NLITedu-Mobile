@@ -33,14 +33,50 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Start notification watcher after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startNotificationWatcher();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _handleAppResumed();
+    }
+  }
+
+  Future<void> _handleAppResumed() async {
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+    if (session != null) {
+      final expiresAt = session.expiresAt;
+      if (expiresAt != null) {
+        final expiresDateTime = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+        final difference = expiresDateTime.difference(DateTime.now());
+        // If expired or expiring in less than 5 minutes, proactively refresh session
+        if (difference.inMinutes < 5) {
+          try {
+            debugPrint("Proactively refreshing Supabase session on app resume...");
+            await client.auth.refreshSession();
+            debugPrint("Supabase session refreshed successfully on app resume.");
+          } catch (e) {
+            debugPrint("Failed to refresh Supabase session on resume: $e");
+          }
+        }
+      }
+    }
   }
 
   void _startNotificationWatcher() {
@@ -65,3 +101,4 @@ class _MyAppState extends ConsumerState<MyApp> {
     );
   }
 }
+
