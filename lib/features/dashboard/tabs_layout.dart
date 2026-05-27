@@ -36,26 +36,33 @@ class TabsLayout extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(children: [
-                        // Profile image from Supabase
-                        Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: theme.colorScheme.primary.withOpacity(0.2),
+                      Expanded(
+                        child: Row(children: [
+                          // Profile image from Supabase
+                          Container(
+                            width: 40, height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: theme.colorScheme.primary.withOpacity(0.2),
+                            ),
+                            child: ClipOval(
+                              child: avatarUrl != null && avatarUrl.isNotEmpty
+                                ? Image.network(avatarUrl, fit: BoxFit.cover, width: 40, height: 40,
+                                    errorBuilder: (_, __, ___) => Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20))
+                                : Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20),
+                            ),
                           ),
-                          child: ClipOval(
-                            child: avatarUrl != null && avatarUrl.isNotEmpty
-                              ? Image.network(avatarUrl, fit: BoxFit.cover, width: 40, height: 40,
-                                  errorBuilder: (_, __, ___) => Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20))
-                              : Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text("Nexgen Learning Institute Of Technology", style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16, fontWeight: FontWeight.w800,
+                              color: theme.colorScheme.primary, letterSpacing: -0.5),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text("Nexgen Learning", style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18, fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.primary, letterSpacing: -0.5)),
-                      ]),
+                        ]),
+                      ),
                       // Bell icon with notification badge
                       GestureDetector(
                         onTap: () => context.push('/notifications'),

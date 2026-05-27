@@ -61,7 +61,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             // Introduction
             _sectionTitle(context, "1. Acceptance of Terms"),
             const SizedBox(height: 12),
-            _bodyText(context, "By accessing or using the NLIT platform (the \"Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."),
+            _bodyText(context, "By accessing or using the Nexgen Learning Institute Of Technology (NLIT) platform (the \"Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."),
             const SizedBox(height: 8),
             _bodyText(context, "These Terms apply to all visitors, users, and others who access or use the Service. We reserve the right, at our sole discretion, to modify or replace these Terms at any time."),
             const SizedBox(height: 32),
@@ -97,7 +97,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
               ),
               child: Column(children: [
                 _numberedItem(context, "01", "Intellectual Property",
-                  "The Service and its original content, features and functionality are and will remain the exclusive property of NLIT and its licensors."),
+                  "The Service and its original content, features and functionality are and will remain the exclusive property of Nexgen Learning Institute Of Technology (NLIT) and its licensors."),
                 const SizedBox(height: 20),
                 _numberedItem(context, "02", "Prohibited Uses",
                   "You agree not to use the Service in any way that violates any applicable national or international law or regulation, or to engage in any conduct that restricts or inhibits anyone's use."),
@@ -131,7 +131,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Text("© 2026 NLIT. All rights reserved.",
+                  Text("© 2026 Nexgen Learning Institute Of Technology (NLIT). All rights reserved.",
                     style: GoogleFonts.inter(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 12),
                   RichText(

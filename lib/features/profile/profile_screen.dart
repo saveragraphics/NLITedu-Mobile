@@ -24,17 +24,23 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 72, 24, 120),
-        child: Column(children: [
-          _profileHero(context, displayName, user?.email ?? "", avatarUrl, profile?.joinYear ?? "2024"),
-          const SizedBox(height: 28),
-          _statsSection(context, profile),
-          const SizedBox(height: 28),
-          _subscriptionCard(context),
-          const SizedBox(height: 28),
-          _settingsSection(context, ref),
-        ]),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(profileProvider.notifier).reloadProfile();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 72, 24, 120),
+          child: Column(children: [
+            _profileHero(context, displayName, user?.email ?? "", avatarUrl, profile?.joinYear ?? "2024"),
+            const SizedBox(height: 28),
+            _statsSection(context, profile),
+            const SizedBox(height: 28),
+            _subscriptionCard(context),
+            const SizedBox(height: 28),
+            _settingsSection(context, ref),
+          ]),
+        ),
       ),
     );
   }
@@ -98,11 +104,10 @@ class ProfileScreen extends ConsumerWidget {
         child: Text("My Stats", style: GoogleFonts.plusJakartaSans(
           fontSize: 16, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurfaceVariant))),
       const SizedBox(height: 12),
-      // 3-column stat row
       Row(children: [
-        Expanded(child: _miniStat(context, LucideIcons.clock, "${(profile?.enrollmentsCount ?? 3) * 12}", "Hours")),
+        Expanded(child: _miniStat(context, LucideIcons.clock, profile != null ? profile.hoursSpent.toStringAsFixed(1) : "0.0", "Hours")),
         const SizedBox(width: 10),
-        Expanded(child: _miniStat(context, LucideIcons.terminal, "${profile?.enrollmentsCount ?? 3}", "Courses")),
+        Expanded(child: _miniStat(context, LucideIcons.terminal, "${profile?.enrollmentsCount ?? 0}", "Courses")),
         const SizedBox(width: 10),
         Expanded(child: _miniStat(context, LucideIcons.award, "${profile?.certificatesCount ?? 0}", "Certs")),
       ]),
@@ -189,7 +194,7 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           SizedBox(width: double.infinity, height: 46,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => context.go('/catalog?filter=Foundation'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

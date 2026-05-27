@@ -50,6 +50,33 @@ class LearningService {
     return LearningGoal.fromJson(response);
   }
 
+  /// Update user's weekly goal hours
+  Future<void> updateWeeklyGoalHours(double goalHours) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception("User not authenticated");
+
+    final existing = await _supabase
+        .from('learning_goals')
+        .select()
+        .eq('user_email', user.email!)
+        .maybeSingle();
+
+    final statusLabel = 'On Track';
+    if (existing == null) {
+      await _supabase.from('learning_goals').insert({
+        'user_email': user.email!,
+        'current_hours': 0.0,
+        'goal_hours': goalHours,
+        'status_label': statusLabel,
+      });
+    } else {
+      await _supabase.from('learning_goals').update({
+        'goal_hours': goalHours,
+        'status_label': statusLabel,
+      }).eq('user_email', user.email!);
+    }
+  }
+
   /// Fetch upcoming sessions
   Future<List<UpcomingSession>> fetchUpcomingSessions() async {
     final response = await _supabase

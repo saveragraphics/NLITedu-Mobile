@@ -131,7 +131,10 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/catalog',
-          builder: (context, state) => const CatalogScreen(),
+          builder: (context, state) {
+            final filter = state.uri.queryParameters['filter'];
+            return CatalogScreen(initialFilter: filter);
+          },
         ),
         GoRoute(
           path: '/learning-hub',

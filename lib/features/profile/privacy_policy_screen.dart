@@ -62,7 +62,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             // Introduction
             _sectionTitle(context, "Introduction"),
             const SizedBox(height: 12),
-            _bodyText(context, "At NLIT, we believe education is a fundamental human right, and so is privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you use our educational platform."),
+            _bodyText(context, "At Nexgen Learning Institute Of Technology (NLIT), we believe education is a fundamental human right, and so is privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you use our educational platform."),
             const SizedBox(height: 8),
             _bodyText(context, "We are committed to transparency and clarity. This document is designed to be readable, skipping the dense legal jargon wherever possible while maintaining the rigorous protections your data deserves."),
             const SizedBox(height: 32),
@@ -153,7 +153,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Text("© 2026 NLIT. All rights reserved.",
+                  Text("© 2026 Nexgen Learning Institute Of Technology (NLIT). All rights reserved.",
                     style: GoogleFonts.inter(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 12),
                   RichText(

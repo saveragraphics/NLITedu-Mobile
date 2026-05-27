@@ -13,6 +13,7 @@ class UserProfile {
   final int certificatesCount;
   final int activeStreak;
   final double avgGrade;
+  final double hoursSpent;
   final DateTime joinedAt;
 
   UserProfile({
@@ -26,6 +27,7 @@ class UserProfile {
     this.certificatesCount = 0,
     this.activeStreak = 1,
     this.avgGrade = 0.0,
+    this.hoursSpent = 0.0,
     required this.joinedAt,
   });
 
@@ -34,6 +36,11 @@ class UserProfile {
     String? phone,
     String? avatarUrl,
     bool? isNotificationsEnabled,
+    int? enrollmentsCount,
+    int? certificatesCount,
+    int? activeStreak,
+    double? avgGrade,
+    double? hoursSpent,
   }) {
     return UserProfile(
       id: id,
@@ -42,10 +49,11 @@ class UserProfile {
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isNotificationsEnabled: isNotificationsEnabled ?? this.isNotificationsEnabled,
-      enrollmentsCount: enrollmentsCount,
-      certificatesCount: certificatesCount,
-      activeStreak: activeStreak,
-      avgGrade: avgGrade,
+      enrollmentsCount: enrollmentsCount ?? this.enrollmentsCount,
+      certificatesCount: certificatesCount ?? this.certificatesCount,
+      activeStreak: activeStreak ?? this.activeStreak,
+      avgGrade: avgGrade ?? this.avgGrade,
+      hoursSpent: hoursSpent ?? this.hoursSpent,
       joinedAt: joinedAt,
     );
   }
@@ -79,6 +87,39 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
         actualEnrollmentCount = meta['enrollments'] ?? 0;
       }
 
+      // Fetch actual certificates count from database
+      int actualCertificatesCount = 0;
+      try {
+        final certificates = await Supabase.instance.client
+            .from('certificates')
+            .select('id')
+            .eq('user_email', user.email!);
+        actualCertificatesCount = (certificates as List).length;
+      } catch (e) {
+        print("Error fetching actual certificates: $e");
+        actualCertificatesCount = meta['certificates'] ?? 0;
+      }
+
+      // Fetch actual hours spent from live_attendance_logs
+      double actualHours = 0.0;
+      try {
+        final logs = await Supabase.instance.client
+            .from('live_attendance_logs')
+            .select('duration_minutes')
+            .eq('student_email', user.email!);
+        final totalMinutes = (logs as List).fold<double>(0.0, (sum, item) {
+          final mins = item['duration_minutes'];
+          if (mins != null) {
+            return sum + (mins as num).toDouble();
+          }
+          return sum;
+        });
+        actualHours = totalMinutes / 60.0;
+      } catch (e) {
+        print("Error fetching actual hours: $e");
+        actualHours = (actualEnrollmentCount * 12).toDouble();
+      }
+
       state = UserProfile(
         id: user.id,
         fullName: meta['full_name'] ?? "New Learner",
@@ -86,12 +127,17 @@ class ProfileNotifier extends StateNotifier<UserProfile?> {
         phone: meta['phone'],
         avatarUrl: meta['avatar_url'],
         enrollmentsCount: actualEnrollmentCount,
-        certificatesCount: meta['certificates'] ?? 0,
+        certificatesCount: actualCertificatesCount,
         activeStreak: meta['streak'] ?? 1,
         avgGrade: meta['avgGrade'] ?? 4.8,
+        hoursSpent: actualHours,
         joinedAt: joined,
       );
     }
+  }
+
+  Future<void> reloadProfile() async {
+    await _loadProfile();
   }
 
   Future<void> updateProfile(String name, String phone) async {

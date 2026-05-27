@@ -12,7 +12,8 @@ import '../../providers/course_provider.dart';
 import '../../providers/enrollment_service.dart';
 
 class CatalogScreen extends ConsumerStatefulWidget {
-  const CatalogScreen({super.key});
+  final String? initialFilter;
+  const CatalogScreen({super.key, this.initialFilter});
 
   @override
   ConsumerState<CatalogScreen> createState() => _CatalogScreenState();
@@ -21,6 +22,7 @@ class CatalogScreen extends ConsumerStatefulWidget {
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   int _selectedFilter = 0;
   String _searchQuery = "";
+  bool _initialized = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,18 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
         final dynamicCategories = allCourses.map((c) => c.category).toSet().toList();
         dynamicCategories.sort();
         final List<String> filters = ["All", "Foundation", "Internship", ...dynamicCategories];
+        
+        if (!_initialized) {
+          if (widget.initialFilter != null) {
+            final idx = filters.indexWhere(
+              (f) => f.toLowerCase() == widget.initialFilter!.toLowerCase()
+            );
+            if (idx != -1) {
+              _selectedFilter = idx;
+            }
+          }
+          _initialized = true;
+        }
         
         final filteredCourses = allCourses.where((course) {
           final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase()) || 

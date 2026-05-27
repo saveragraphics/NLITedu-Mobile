@@ -62,6 +62,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ref.invalidate(upcomingSessionsProvider);
           ref.invalidate(enrolledFullCoursesProvider);
           ref.invalidate(availableQuizzesProvider);
+          ref.invalidate(userEnrollmentsProvider);
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -83,9 +84,15 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                     
                     // Actual Goal Data
                     goalAsync.when(
-                      data: (goal) => WeeklyGoalCard(goal: goal),
+                      data: (goal) => GestureDetector(
+                        onTap: () => _showGoalSetupDialog(context, goal),
+                        child: WeeklyGoalCard(goal: goal),
+                      ),
                       loading: () => const _LoadingSkeleton(height: 180),
-                      error: (_, __) => WeeklyGoalCard(goal: LearningGoal(id: '', userEmail: '', currentHours: 0, goalHours: 5, statusLabel: 'Setup Needed')),
+                      error: (_, __) => GestureDetector(
+                        onTap: () => _showGoalSetupDialog(context, LearningGoal(id: '', userEmail: '', currentHours: 0, goalHours: 5, statusLabel: 'Setup Needed')),
+                        child: WeeklyGoalCard(goal: LearningGoal(id: '', userEmail: '', currentHours: 0, goalHours: 5, statusLabel: 'Setup Needed')),
+                      ),
                     ),
                   ],
                 ),
@@ -129,9 +136,25 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                         final session = sessions.cast<LiveSession?>().firstWhere(
                           (s) => s?.courseTitle == course.title, orElse: () => null
                         );
+                        
+                        // Extract enrollment status
+                        final enrollments = ref.read(userEnrollmentsProvider).value ?? [];
+                        final enrollmentMap = enrollments.firstWhere(
+                          (e) {
+                            final eTitle = (e['course_title'] as String).trim().toLowerCase();
+                            final cTitle = course.title.trim().toLowerCase();
+                            if (course.slug == 'general' && eTitle == 'nlit course enrollment') {
+                              return true;
+                            }
+                            return eTitle == cTitle;
+                          },
+                          orElse: () => <String, dynamic>{},
+                        );
+                        final status = enrollmentMap['status'] as String? ?? 'PAID';
+
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 24),
-                          child: _buildNexgenCourseCard(context, course, session),
+                          child: _buildNexgenCourseCard(context, course, session, status),
                         );
                       },
                       childCount: courses.length,
@@ -235,7 +258,13 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
             backgroundImage: NetworkImage(profile?.avatarUrl ?? "https://i.pravatar.cc/150"),
           ),
           const SizedBox(width: 12),
-          Text("Nexgen Learning", style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: -0.5)),
+          Expanded(
+            child: Text("Nexgen Learning Institute Of Technology", style: GoogleFonts.plusJakartaSans(
+              fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: -0.5),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
       actions: [
@@ -331,14 +360,42 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     return FadeTransition(opacity: _pulseController, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(8)), child: Text("LIVE", style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white))));
   }
 
-  Widget _buildNexgenCourseCard(BuildContext context, Course course, LiveSession? session) {
+  Widget _buildNexgenCourseCard(BuildContext context, Course course, LiveSession? session, String status) {
     final theme = Theme.of(context);
     final isLive = session != null;
+    final isPending = status.toUpperCase() == 'PENDING';
+    
+    final statusColor = isPending
+        ? Colors.amber.shade900
+        : (isLive ? Colors.red : theme.colorScheme.primary);
+    final statusBgColor = isPending
+        ? Colors.amber.withOpacity(0.1)
+        : (isLive ? Colors.red.withOpacity(0.1) : theme.colorScheme.primary.withOpacity(0.1));
+    final statusText = isPending
+        ? "PENDING VERIFICATION"
+        : (isLive ? "LIVE NOW" : "ACTIVE / ENROLLED");
+    
+    final progressValue = isPending ? 0.0 : 0.75;
+    final progressText = isPending ? "0% Complete" : "75% Complete";
+    final lessonsText = isPending ? "0 / 16 Lessons" : "12 / 16 Lessons";
+    final buttonText = isPending
+        ? "Pending Verification"
+        : (isLive ? "Join Class" : "Continue Learning");
+    
     return GestureDetector(
-      onTap: () => context.push('/learning-hub/view', extra: course),
+      onTap: isPending
+          ? () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Your enrollment is pending admin verification. Please wait."),
+                  backgroundColor: Colors.amber,
+                ),
+              );
+            }
+          : () => context.push('/learning-hub/view', extra: course),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(32), border: Border.all(color: isLive ? Colors.red.withOpacity(0.5) : theme.colorScheme.outlineVariant.withOpacity(0.3), width: isLive ? 2 : 1), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 40, offset: const Offset(0, 10))]),
+        decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(32), border: Border.all(color: isPending ? Colors.amber.withOpacity(0.5) : (isLive ? Colors.red.withOpacity(0.5) : theme.colorScheme.outlineVariant.withOpacity(0.3)), width: (isLive || isPending) ? 2 : 1), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 40, offset: const Offset(0, 10))]),
         child: Column(
           children: [
             Row(
@@ -349,21 +406,28 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: isLive ? Colors.red.withOpacity(0.1) : theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text(isLive ? "LIVE NOW" : "IN PROGRESS", style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w900, color: isLive ? Colors.red : theme.colorScheme.primary))),
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(6)), child: Text(statusText, style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w900, color: statusColor))),
                       const SizedBox(height: 8),
                       Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
-                      Text("Module 4: Advanced Systems", style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                      Text(isPending ? "Verification in progress" : "Module 4: Advanced Systems", style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("75% Complete", style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700)), Text("12 / 16 Lessons", style: GoogleFonts.inter(fontSize: 11, color: Colors.grey))]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(progressText, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700)), Text(lessonsText, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey))]),
             const SizedBox(height: 10),
-            ClipRRect(borderRadius: BorderRadius.circular(10), child: LinearProgressIndicator(value: 0.75, minHeight: 6, backgroundColor: theme.colorScheme.outlineVariant.withOpacity(0.3), valueColor: AlwaysStoppedAnimation(isLive ? Colors.red : theme.colorScheme.primary))),
+            ClipRRect(borderRadius: BorderRadius.circular(10), child: LinearProgressIndicator(value: progressValue, minHeight: 6, backgroundColor: theme.colorScheme.outlineVariant.withOpacity(0.3), valueColor: AlwaysStoppedAnimation(isPending ? Colors.amber : (isLive ? Colors.red : theme.colorScheme.primary)))),
             const SizedBox(height: 24),
-            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: () => context.push('/learning-hub/view', extra: course), style: ElevatedButton.styleFrom(backgroundColor: isLive ? Colors.red : theme.colorScheme.primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text(isLive ? "Join Class" : "Continue Learning", style: const TextStyle(fontWeight: FontWeight.bold)), const SizedBox(width: 8), const Icon(LucideIcons.play, size: 14)]))),
+            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: isPending ? () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Your enrollment is pending admin verification. Please wait."),
+                  backgroundColor: Colors.amber,
+                ),
+              );
+            } : () => context.push('/learning-hub/view', extra: course), style: ElevatedButton.styleFrom(backgroundColor: isPending ? Colors.amber.shade700 : (isLive ? Colors.red : theme.colorScheme.primary), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text(buttonText, style: const TextStyle(fontWeight: FontWeight.bold)), const SizedBox(width: 8), Icon(isPending ? LucideIcons.alertTriangle : LucideIcons.play, size: 14)]))),
           ],
         ),
       ),
@@ -435,6 +499,186 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ],
         ),
       ),
+    );
+  }
+
+  void _showGoalSetupDialog(BuildContext context, LearningGoal goal) {
+    final theme = Theme.of(context);
+    double selectedHours = goal.goalHours;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                padding: const EdgeInsets.fromLTRB(28, 20, 28, 36),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      "Set Weekly Goal",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "How many hours of learning do you want to aim for this week?",
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Goal Hours: ${selectedHours.toStringAsFixed(0)}h",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: selectedHours,
+                      min: 1,
+                      max: 40,
+                      divisions: 39,
+                      label: "${selectedHours.toStringAsFixed(0)}h",
+                      activeColor: theme.colorScheme.primary,
+                      inactiveColor: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                      onChanged: (val) {
+                        setState(() {
+                          selectedHours = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [5, 10, 15, 20, 30].map((hours) {
+                        final isSelected = selectedHours.round() == hours;
+                        return ChoiceChip(
+                          label: Text("${hours}h"),
+                          selected: isSelected,
+                          selectedColor: theme.colorScheme.primaryContainer,
+                          labelStyle: GoogleFonts.inter(
+                            color: isSelected
+                                ? theme.colorScheme.onPrimaryContainer
+                                : theme.colorScheme.onSurface,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                selectedHours = hours.toDouble();
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Text("Updating weekly goal..."),
+                                ],
+                              ),
+                              duration: Duration(days: 1),
+                            ),
+                          );
+
+                          try {
+                            await ref.read(learningServiceProvider).updateWeeklyGoalHours(selectedHours);
+                            ref.invalidate(weeklyGoalProvider);
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Weekly learning goal updated successfully!"),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Failed to update goal: $e"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Save Goal",
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

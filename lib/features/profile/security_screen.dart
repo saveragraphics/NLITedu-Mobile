@@ -156,9 +156,124 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 fontSize: 13, fontWeight: FontWeight.w700)),
             ),
           ),
+          
+          // Danger Zone / Account Deletion (Required by Google Play Console policies)
+          const SizedBox(height: 32),
+          Text("Danger Zone", style: GoogleFonts.plusJakartaSans(
+            fontSize: 16, fontWeight: FontWeight.w700, color: theme.colorScheme.error)),
+          const SizedBox(height: 12),
+          _deleteAccountCard(context),
         ]),
       ),
     );
+  }
+
+  Widget _deleteAccountCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.error.withOpacity(0.05),
+        border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(20)),
+      child: Row(children: [
+        Container(width: 44, height: 44,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.error.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(14)),
+          child: Icon(LucideIcons.trash2, size: 20, color: theme.colorScheme.error)),
+        const SizedBox(width: 14),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text("Delete Account", style: GoogleFonts.plusJakartaSans(
+            fontSize: 14, fontWeight: FontWeight.w700, color: theme.colorScheme.error)),
+          const SizedBox(height: 2),
+          Text("Permanently erase your account and data.", style: GoogleFonts.inter(
+            fontSize: 12, color: theme.colorScheme.error.withOpacity(0.7))),
+        ])),
+        TextButton(
+          onPressed: _loading ? null : () => _confirmDeleteAccount(context),
+          child: Text("Delete", style: GoogleFonts.inter(
+            color: theme.colorScheme.error, fontWeight: FontWeight.bold)),
+        ),
+      ]),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Delete Account?", style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+        content: Text(
+          "Are you sure you want to permanently delete your account? This will erase all your learning history, profile details, and certificates. This action cannot be undone.",
+          style: GoogleFonts.inter(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text("Cancel", style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _deleteAccount();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            child: Text("Permanently Delete", style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    setState(() => _loading = true);
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        // Attempt to log request to database
+        try {
+          await Supabase.instance.client.from('deletion_requests').insert({
+            'user_id': user.id,
+            'email': user.email,
+            'requested_at': DateTime.now().toIso8601String(),
+          });
+        } catch (e) {
+          print("Database logging of deletion request failed: $e");
+        }
+
+        // Attempt to delete profiles table row
+        try {
+          await Supabase.instance.client.from('profiles').delete().eq('id', user.id);
+        } catch (e) {
+          print("Database profile deletion failed: $e");
+        }
+
+        // Sign out user
+        await Supabase.instance.client.auth.signOut();
+
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Account deletion request submitted. You have been signed out."),
+              backgroundColor: Colors.red.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final theme = Theme.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Deletion failed: $e"), backgroundColor: theme.colorScheme.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   InputDecoration _inputDeco(BuildContext context, String hint, IconData icon) {
