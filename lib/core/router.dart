@@ -17,6 +17,7 @@ import '../features/profile/notifications_settings_screen.dart';
 import '../features/profile/security_screen.dart';
 import '../features/profile/privacy_policy_screen.dart';
 import '../features/profile/terms_and_conditions_screen.dart';
+import '../features/profile/help_support_screen.dart';
 import '../models/course.dart';
 import '../models/live_session.dart';
 import '../models/quiz_models.dart';
@@ -170,6 +171,10 @@ final router = GoRouter(
             GoRoute(
               path: 'terms',
               builder: (context, state) => const TermsAndConditionsScreen(),
+            ),
+            GoRoute(
+              path: 'help',
+              builder: (context, state) => const HelpSupportScreen(),
             ),
           ],
         ),

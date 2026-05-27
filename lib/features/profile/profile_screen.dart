@@ -246,7 +246,7 @@ class ProfileScreen extends ConsumerWidget {
             onTap: () => context.push('/profile/terms')),
           _divider(context),
           _settingsItem(context, LucideIcons.helpCircle, "Help & Support",
-            "FAQs and documentation", onTap: () {}),
+            "FAQs and documentation", onTap: () => context.push('/profile/help')),
           _divider(context),
           _settingsItem(context, LucideIcons.logOut, "Log Out",
             "Sign out of your session",
