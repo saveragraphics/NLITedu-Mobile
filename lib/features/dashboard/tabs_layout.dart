@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,148 +10,193 @@ import '../../core/theme.dart';
 import '../../core/notification_service.dart';
 
 /// Stitch 01 Tabs Layout — Glass nav with notification badge
-class TabsLayout extends ConsumerWidget {
+class TabsLayout extends ConsumerStatefulWidget {
   final Widget child;
   const TabsLayout({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TabsLayout> createState() => _TabsLayoutState();
+}
+
+class _TabsLayoutState extends ConsumerState<TabsLayout> {
+  DateTime? _lastPressedAt;
+
+  void _handlePop() {
+    final routerInstance = GoRouter.of(context);
+    if (routerInstance.canPop()) {
+      routerInstance.pop();
+      return;
+    }
+
+    final location = GoRouterState.of(context).uri.path;
+    if (location != '/home') {
+      context.go('/home');
+    } else {
+      final now = DateTime.now();
+      if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+        _lastPressedAt = now;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Press back again to exit',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+            ),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            margin: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+          ),
+        );
+      } else {
+        SystemNavigator.pop();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = Supabase.instance.client.auth.currentUser;
     final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
     final unreadAsync = ref.watch(unreadNotificationCountProvider);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          child,
-          // TopAppBar — glass
-          Positioned(
-            top: 0, left: 0, right: 0,
-            child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 8, 24, 12),
-                  decoration: BoxDecoration(color: theme.colorScheme.surface.withOpacity(0.8)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(children: [
-                          // Profile image from Supabase
-                          Container(
-                            width: 40, height: 40,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: theme.colorScheme.primary.withOpacity(0.2),
-                            ),
-                            child: ClipOval(
-                              child: avatarUrl != null && avatarUrl.isNotEmpty
-                                ? Image.network(avatarUrl, fit: BoxFit.cover, width: 40, height: 40,
-                                    errorBuilder: (_, __, ___) => Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20))
-                                : Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text("Nexgen Learning Institute Of Technology", style: GoogleFonts.plusJakartaSans(
-                              fontSize: 16, fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.primary, letterSpacing: -0.5),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ]),
-                      ),
-                      // Bell icon with notification badge
-                      GestureDetector(
-                        onTap: () => context.push('/notifications'),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _handlePop();
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            widget.child,
+            // TopAppBar — glass
+            Positioned(
+              top: 0, left: 0, right: 0,
+              child: ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 8, 24, 12),
+                    decoration: BoxDecoration(color: theme.colorScheme.surface.withOpacity(0.8)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(children: [
+                            // Profile image from Supabase
                             Container(
-                              width: 44, height: 44,
+                              width: 40, height: 40,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerLowest,
-                                borderRadius: BorderRadius.circular(14),
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.primary.withOpacity(0.2),
                               ),
-                              child: Icon(LucideIcons.bell, size: 22, color: theme.colorScheme.onSurfaceVariant),
+                              child: ClipOval(
+                                child: avatarUrl != null && avatarUrl.isNotEmpty
+                                  ? Image.network(avatarUrl, fit: BoxFit.cover, width: 40, height: 40,
+                                      errorBuilder: (_, __, ___) => Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20))
+                                  : Icon(LucideIcons.user, color: theme.colorScheme.primary, size: 20),
+                              ),
                             ),
-                            // Red badge for unread notifications
-                            unreadAsync.when(
-                              data: (count) {
-                                if (count <= 0) return const SizedBox.shrink();
-                                return Positioned(
-                                  top: -2, right: -2,
-                                  child: Container(
-                                    width: 20, height: 20,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEF4444),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: theme.colorScheme.surface, width: 2),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        count > 9 ? '9+' : '$count',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text("Nexgen Learning Institute Of Technology", style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16, fontWeight: FontWeight.w800,
+                                color: theme.colorScheme.primary, letterSpacing: -0.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ]),
+                        ),
+                        // Bell icon with notification badge
+                        GestureDetector(
+                          onTap: () => context.push('/notifications'),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 44, height: 44,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerLowest,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(LucideIcons.bell, size: 22, color: theme.colorScheme.onSurfaceVariant),
+                              ),
+                              // Red badge for unread notifications
+                              unreadAsync.when(
+                                data: (count) {
+                                  if (count <= 0) return const SizedBox.shrink();
+                                  return Positioned(
+                                    top: -2, right: -2,
+                                    child: Container(
+                                      width: 20, height: 20,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: theme.colorScheme.surface, width: 2),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          count > 9 ? '9+' : '$count',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                              loading: () => const SizedBox.shrink(),
-                              error: (_, __) => const SizedBox.shrink(),
-                            ),
-                          ],
+                                  );
+                                },
+                                loading: () => const SizedBox.shrink(),
+                                error: (_, __) => const SizedBox.shrink(),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          // BottomNavBar — CORRECTED order: Dashboard(Home), Discover(Catalog), My Hub, Profile
-          Positioned(
-            bottom: 0, left: 0, right: 0,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withOpacity(0.9),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                    boxShadow: [BoxShadow(
-                      color: theme.colorScheme.onSurface.withOpacity(0.04),
-                      blurRadius: 40, offset: const Offset(0, -10),
-                    )],
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _navItem(context, LucideIcons.home, "Home", "/home"),
-                          _navItem(context, LucideIcons.compass, "Discover", "/catalog"),
-                          _navItem(context, LucideIcons.bookOpen, "My Learning", "/learning-hub"),
-                          _navItem(context, LucideIcons.award, "Achievements", "/achievements"),
-                          _navItem(context, LucideIcons.user, "Profile", "/profile"),
-                        ],
+            // BottomNavBar — CORRECTED order: Dashboard(Home), Discover(Catalog), My Hub, Profile
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface.withOpacity(0.9),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                      boxShadow: [BoxShadow(
+                        color: theme.colorScheme.onSurface.withOpacity(0.04),
+                        blurRadius: 40, offset: const Offset(0, -10),
+                      )],
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _navItem(context, LucideIcons.home, "Home", "/home"),
+                            _navItem(context, LucideIcons.compass, "Discover", "/catalog"),
+                            _navItem(context, LucideIcons.bookOpen, "My Learning", "/learning-hub"),
+                            _navItem(context, LucideIcons.award, "Achievements", "/achievements"),
+                            _navItem(context, LucideIcons.user, "Profile", "/profile"),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      ),    );
   }
 
   Widget _navItem(BuildContext context, IconData icon, String label, String path) {

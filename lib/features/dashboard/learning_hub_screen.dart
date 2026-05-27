@@ -363,7 +363,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
   Widget _buildNexgenCourseCard(BuildContext context, Course course, LiveSession? session, String status) {
     final theme = Theme.of(context);
     final isLive = session != null;
-    final isPending = status.toUpperCase() == 'PENDING';
+    final isPending = false;
     
     final statusColor = isPending
         ? Colors.amber.shade900

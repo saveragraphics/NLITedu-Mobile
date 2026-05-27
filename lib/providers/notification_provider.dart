@@ -33,6 +33,7 @@ class NotificationWatcher {
   
   StreamSubscription? _liveSubscription;
   StreamSubscription? _upcomingSubscription;
+  StreamSubscription? _authSubscription;
   
   // Track which sessions we've already notified about to avoid duplicates
   final Set<String> _notifiedLiveSessions = {};
@@ -41,7 +42,17 @@ class NotificationWatcher {
   static const String _notifiedLiveKey = 'notified_live_sessions';
   static const String _scheduledRemindersKey = 'scheduled_reminders_sessions';
 
-  NotificationWatcher(this._notifService, this._supabase);
+  NotificationWatcher(this._notifService, this._supabase) {
+    // Watch auth changes to dynamically start and stop watching
+    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        startWatching();
+      } else {
+        dispose();
+      }
+    });
+  }
 
   /// Start watching for notification-worthy events
   Future<void> startWatching() async {
@@ -55,17 +66,32 @@ class NotificationWatcher {
     final user = _supabase.auth.currentUser;
     if (user == null) return;
 
-    // Get user's enrolled course titles
-    final enrollments = await _supabase
-        .from('enrollments')
-        .select('course_title')
-        .eq('email', user.email ?? user.phone ?? '');
-    
-    final enrolledTitles = (enrollments as List)
-        .map((e) => (e['course_title'] as String).trim().toLowerCase())
-        .toSet();
+    // Cancel existing subscriptions to avoid duplicates
+    await _liveSubscription?.cancel();
+    await _upcomingSubscription?.cancel();
+    _liveSubscription = null;
+    _upcomingSubscription = null;
 
-    if (enrolledTitles.isEmpty) return;
+    // Helper to check dynamic enrollment
+    Future<bool> checkUserEnrollment(String courseTitle) async {
+      try {
+        final enrollments = await _supabase
+            .from('enrollments')
+            .select('course_title')
+            .eq('email', user.email ?? user.phone ?? '');
+        
+        final enrolledTitles = (enrollments as List)
+            .map((e) => (e['course_title'] as String).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase())
+            .toSet();
+
+        final sessionTitleClean = courseTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase();
+        
+        return enrolledTitles.any((et) => sessionTitleClean.contains(et) || et.contains(sessionTitleClean));
+      } catch (e) {
+        print('Error verifying dynamic enrollment: $e');
+        return false;
+      }
+    }
 
     // Watch live sessions for instant notifications
     _liveSubscription = retryStreamWithAuth<List<Map<String, dynamic>>>(() => _supabase
@@ -79,12 +105,14 @@ class NotificationWatcher {
 
       for (final row in rows) {
         final session = LiveSession.fromJson(row);
-        final titleLower = session.courseTitle.trim().toLowerCase();
+        
+        // Dynamically verify enrollment for this session
+        final isEnrolled = await checkUserEnrollment(session.courseTitle);
         
         // Only notify for enrolled courses, and only once per session
-        if (enrolledTitles.contains(titleLower) && !_notifiedLiveSessions.contains(session.id)) {
+        if (isEnrolled && !_notifiedLiveSessions.contains(session.id)) {
           _notifiedLiveSessions.add(session.id);
-          prefs.setStringList(_notifiedLiveKey, _notifiedLiveSessions.toList());
+          await prefs.setStringList(_notifiedLiveKey, _notifiedLiveSessions.toList());
           await _notifService.showLiveClassNotification(session);
         }
       }
@@ -102,15 +130,17 @@ class NotificationWatcher {
 
       for (final row in rows) {
         final session = LiveSession.fromJson(row);
-        final titleLower = session.courseTitle.trim().toLowerCase();
         
-        if (enrolledTitles.contains(titleLower) && 
+        // Dynamically verify enrollment for this session
+        final isEnrolled = await checkUserEnrollment(session.courseTitle);
+        
+        if (isEnrolled && 
             session.scheduledAt != null && 
             !_scheduledReminders.contains(session.id)) {
           // Only schedule if in the future
           if (session.scheduledAt!.isAfter(DateTime.now())) {
             _scheduledReminders.add(session.id);
-            prefs.setStringList(_scheduledRemindersKey, _scheduledReminders.toList());
+            await prefs.setStringList(_scheduledRemindersKey, _scheduledReminders.toList());
             
             // Show immediate notification
             await _notifService.showNewScheduledClassNotification(session);
@@ -123,7 +153,18 @@ class NotificationWatcher {
     });
 
     // Fetch and schedule quiz reminders
-    await _scheduleQuizReminders(enrolledTitles);
+    try {
+      final enrollments = await _supabase
+          .from('enrollments')
+          .select('course_title')
+          .eq('email', user.email ?? user.phone ?? '');
+      final enrolledTitles = (enrollments as List)
+          .map((e) => (e['course_title'] as String).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase())
+          .toSet();
+      await _scheduleQuizReminders(enrolledTitles);
+    } catch (e) {
+      print('Initial quiz reminder fetch skipped: $e');
+    }
   }
 
   /// Fetch upcoming quizzes and schedule reminders
@@ -144,9 +185,10 @@ class NotificationWatcher {
           .toList();
 
       for (final quiz in quizzes) {
+        final quizSlugClean = quiz.courseSlug.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase();
         // Check if the quiz belongs to an enrolled course
-        if (enrolledTitles.any((t) => quiz.courseSlug.toLowerCase().contains(t) || 
-            t.contains(quiz.courseSlug.toLowerCase()))) {
+        final isEnrolled = enrolledTitles.any((et) => quizSlugClean.contains(et) || et.contains(quizSlugClean));
+        if (isEnrolled) {
           await _notifService.scheduleQuizReminder(quiz);
         }
       }
@@ -160,6 +202,7 @@ class NotificationWatcher {
   void dispose() {
     _liveSubscription?.cancel();
     _upcomingSubscription?.cancel();
+    _authSubscription?.cancel();
   }
 }
 
