@@ -18,7 +18,7 @@ class EnrollmentService {
 
   /// Course-specific pricing map matching web app
   static const Map<String, Map<String, double>> coursePricing = {
-    'AutoCAD 2D & 3D Design': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 5999},
+    'AutoCAD': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 5999},
     'Revit Building Information Modeling (BIM)': {'govt': 2499, 'private': 3999, 'job': 4999, 'display': 6999},
     'STAAD Pro': {'govt': 2499, 'private': 3999, 'job': 4999, 'display': 6999},
     'SolidWorks': {'govt': 2999, 'private': 4999, 'job': 5999, 'display': 9999},

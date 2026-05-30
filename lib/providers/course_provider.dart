@@ -25,7 +25,7 @@ final courseProvider = StreamProvider<List<Course>>((ref) {
 /// Hardcoded fallback list to ensure the app works even offline or during migration.
 final List<Course> staticCourses = [
   Course(
-    title: "AutoCAD 2D & 3D Design",
+    title: "AutoCAD",
     slug: "autocad-2d-3d-design",
     description: "Master industry-standard AutoCAD tools for precise 2D drafting and 3D modeling essential for architects, engineers, and designers.",
     imageUrl: "https://www.nlitedu.com/fontimage/autocad.png",

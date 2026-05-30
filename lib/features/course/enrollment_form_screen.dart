@@ -55,7 +55,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   String? _internshipMode = 'Online';
 
   final List<String> _courseOptions = [
-    "AutoCAD 2D & 3D Design",
+    "AutoCAD",
     "Revit Building Information Modeling (BIM)",
     "Java Programming",
     "Python for Data Science & AI",
