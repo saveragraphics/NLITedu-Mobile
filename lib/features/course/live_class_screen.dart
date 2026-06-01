@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -39,6 +40,14 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
 
     // 3. Prevent Screenshots and Screen Recording
     _enableSecureMode();
+
+    // 4. Enable landscape and immersive mode
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   Future<void> _enableSecureMode() async {
@@ -49,10 +58,15 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     await ScreenProtector.preventScreenshotOff();
   }
 
+  bool _isMeetingUrl(String url) {
+    final lowerUrl = url.toLowerCase();
+    return lowerUrl.contains('zoom.us') || lowerUrl.contains('meet.google.com');
+  }
+
   Future<void> _initWebView() async {
     final url = widget.session.sessionUrl;
 
-    // Check if the URL should be launched externally (Google Meet, Zoom, etc.)
+    // Check if the URL should be launched externally (custom schemes, stores)
     if (_shouldLaunchExternally(url)) {
       setState(() {
         _isExternal = true;
@@ -62,6 +76,14 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
       _controller = WebViewController();
       _launchExternalUrl(url);
       return;
+    }
+
+    // Check if it's a Zoom or Google Meet link to show the dual-choice UI first
+    if (_isMeetingUrl(url)) {
+      setState(() {
+        _isExternal = true;
+        _isLoading = false;
+      });
     }
 
     // Request Camera, Microphone, and Location permissions for WebRTC/Geolocation
@@ -97,6 +119,19 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
           },
           onNavigationRequest: (NavigationRequest request) {
             final requestUrl = request.url;
+            
+            // If user chose to join inside app, ignore Zoom's auto-redirect to its app
+            if (!_isExternal) {
+              final lowerUrl = requestUrl.toLowerCase();
+              if (lowerUrl.startsWith('zoomus://') || 
+                  lowerUrl.startsWith('zoommtg://') || 
+                  lowerUrl.contains('intent://zoom.us') ||
+                  lowerUrl.contains('scheme=zoomus') ||
+                  lowerUrl.contains('intent://meet.google.com')) {
+                return NavigationDecision.prevent;
+              }
+            }
+
             if (_shouldLaunchExternally(requestUrl)) {
               _launchExternalUrl(requestUrl);
               return NavigationDecision.prevent;
@@ -118,6 +153,28 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
         },
       );
     }
+
+    if (!_isExternal) {
+      _controller.loadRequest(Uri.parse(url));
+    }
+  }
+
+  void _joinInsideApp() {
+    String url = widget.session.sessionUrl;
+    
+    // For Zoom, convert standard join link (/j/) to the web client link (/wc/join/)
+    // This provides a much better experience inside a webview than the standard page
+    if (url.toLowerCase().contains('zoom.us/j/')) {
+      url = url.replaceFirst('/j/', '/wc/join/');
+    }
+
+    // Spoof a desktop user agent to prevent Zoom/Meet from forcing mobile redirects
+    _controller.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+    setState(() {
+      _isExternal = false;
+      _isLoading = true;
+    });
 
     _controller.loadRequest(Uri.parse(url));
   }
@@ -309,10 +366,10 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
                       children: [
                         Text(
                           isGoogleMeet 
-                              ? "Open Google Meet" 
-                              : (isZoom ? "Open Zoom" : "Join Live Class"),
+                              ? "Open Google Meet (Recommended)" 
+                              : (isZoom ? "Open Zoom (Recommended)" : "Join Live Class"),
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
                             color: Colors.black,
                           ),
@@ -328,6 +385,44 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              if (isGoogleMeet || isZoom)
+                GestureDetector(
+                  onTap: _joinInsideApp,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Join from Browser (Inside App)",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            LucideIcons.globe, 
+                            size: 18, 
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -368,18 +463,28 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
     }
     // 4. Disable Secure Mode on exit
     _disableSecureMode();
+    
+    // 5. Restore orientations and UI mode
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    
     return Scaffold(
-      appBar: AppBar(
+      backgroundColor: Colors.black,
+      appBar: (_isExternal || !isLandscape) ? AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("LIVE: ${widget.session.courseTitle}", 
-              style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
+              style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
             Text("Attendance logged • Progress tracking active", 
               style: GoogleFonts.inter(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600)),
           ],
@@ -387,11 +492,11 @@ class _LiveClassScreenState extends ConsumerState<LiveClassScreen> {
         actions: [
           if (!_isExternal)
             IconButton(
-              icon: const Icon(LucideIcons.refreshCw, size: 20),
+              icon: const Icon(LucideIcons.refreshCw, size: 20, color: Colors.white),
               onPressed: () => _controller.reload(),
             ),
         ],
-      ),
+      ) : null,
       body: _isExternal 
           ? _buildExternalMeetingUI() 
           : Stack(

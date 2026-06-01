@@ -8,11 +8,8 @@ import '../../models/course.dart';
 import '../../providers/enrollment_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
-import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
 import 'payment_webview_screen.dart';
 
 
@@ -82,7 +79,6 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
   File? _marksheet12;
   File? _marksheetSem;
-  File? _collegeIdFile;
   final _messageController = TextEditingController();
 
   late CFPaymentGatewayService _cfPaymentGatewayService;
@@ -184,28 +180,6 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     }
   }
 
-  Future<void> _pickCollegeId() async {
-    final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
-
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
-      if (bytes.length > 200 * 1024) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('College ID must be under 200 KB.')),
-          );
-        }
-        return;
-      }
-      setState(() => _collegeIdFile = File(pickedFile.path));
-    }
-  }
-
-  bool get _isCollegeStudent => _collegeType == 'govt' || _collegeType == 'private';
-
   bool get _isFormComplete {
     final baseComplete = _fullNameController.text.isNotEmpty &&
         _fatherNameController.text.isNotEmpty &&
@@ -295,6 +269,9 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'duration': widget.course.isInternship ? _duration : null,
         'internship_mode': widget.course.isInternship ? _internshipMode : null,
         'user_id': user?.id,
+        'original_mrp': _displayPrice,
+        'fee_paid': _currentFee,
+        'gateway_type': 'cashfree',
       };
 
       // 3. Initiate Payment
@@ -313,6 +290,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'cf_payment_id': orderId,
       });
 
+      if (!mounted) return;
       // 5. Trigger WebView Payment to bypass "Trusted Source" security check on emulators
       final bool? isSuccess = await Navigator.of(context).push<bool>(
         MaterialPageRoute(

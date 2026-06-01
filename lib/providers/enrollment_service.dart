@@ -217,54 +217,27 @@ class EnrollmentService {
     }
   }
 
-  /// Confirm payment success in Supabase.
-  /// Uses raw HTTP PATCH with Prefer: return=minimal to completely
-  /// bypass PostgREST schema cache validation for return columns.
+  /// Confirm payment success in Supabase using Edge Function.
+  /// This matches the website's verification flow.
   Future<void> confirmPayment(String orderId) async {
     try {
-      // Primary: use Supabase client (no .select())
-      await _supabase
-          .from('enrollments')
-          .update({'status': 'PAID'})
-          .eq('cf_payment_id', orderId);
+      final response = await _supabase.functions.invoke(
+        'verify-cashfree-payment',
+        body: {'orderId': orderId},
+      );
+      
+      if (response.status != 200) {
+        throw Exception('Edge function verification failed: ${response.data}');
+      }
+      
+      // Verification successful, edge function handles the database update
+      print('Payment verified successfully via edge function.');
     } catch (e) {
-      print('confirmPayment primary failed: $e — trying raw HTTP fallback');
-      // Fallback: use raw HTTP PATCH with return=minimal
-      await _confirmPaymentViaRest(orderId);
+      print('confirmPayment failed: $e');
+      throw Exception('Payment verification failed: $e');
     }
   }
 
-  /// Raw HTTP fallback for confirming payment.
-  /// Sends a PATCH directly to the Supabase REST API with
-  /// Prefer: return=minimal, ensuring PostgREST never looks up
-  /// return columns in its schema cache.
-  Future<void> _confirmPaymentViaRest(String orderId) async {
-    final supabaseUrl = _supabase.rest.url.replaceAll('/rest/v1', '');
-    final anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY',
-        defaultValue: '');
-    
-    // Get the current session's access token for RLS
-    final accessToken = _supabase.auth.currentSession?.accessToken ?? anonKey;
-    
-    final uri = Uri.parse(
-      '$supabaseUrl/rest/v1/enrollments?cf_payment_id=eq.$orderId'
-    );
-
-    final response = await http.patch(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': anonKey.isNotEmpty ? anonKey : accessToken,
-        'Authorization': 'Bearer $accessToken',
-        'Prefer': 'return=minimal',
-      },
-      body: json.encode({'status': 'PAID'}),
-    );
-
-    if (response.statusCode != 204 && response.statusCode != 200) {
-      throw Exception('REST fallback failed: ${response.statusCode} ${response.body}');
-    }
-  }
 
   /// Send enrollment confirmation email via website API (DEPRECATED - Webhook handles this)
   Future<void> sendEnrollmentEmail({

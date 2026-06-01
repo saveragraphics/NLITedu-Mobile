@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/live_session.dart';
 import '../core/utils/supabase_utils.dart';
+import 'enrollment_service.dart';
 
 class LiveService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -46,13 +47,36 @@ class LiveService {
 final liveServiceProvider = Provider((ref) => LiveService());
 
 /// Provider for active live sessions matching user's enrollment
-final activeLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
+final activeLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) async* {
   final service = ref.watch(liveServiceProvider);
-  return service.activeSessionsStream;
+  final enrollments = await ref.watch(userEnrollmentsProvider.future);
+  
+  final enrolledTitles = enrollments
+      .map((e) => (e['course_title'] as String).trim().toLowerCase())
+      .toSet();
+
+  yield* service.activeSessionsStream.map((sessions) {
+    return sessions.where((s) {
+      final title = s.courseTitle.trim().toLowerCase();
+      return enrolledTitles.contains(title) || (title == 'general' && enrolledTitles.contains('nlit course enrollment'));
+    }).toList();
+  });
 });
 
-/// Provider for upcoming scheduled sessions
-final upcomingLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) {
+/// Provider for upcoming scheduled sessions matching user's enrollment
+final upcomingLiveSessionsProvider = StreamProvider<List<LiveSession>>((ref) async* {
   final service = ref.watch(liveServiceProvider);
-  return service.upcomingSessionsStream;
+  final enrollments = await ref.watch(userEnrollmentsProvider.future);
+
+  final enrolledTitles = enrollments
+      .map((e) => (e['course_title'] as String).trim().toLowerCase())
+      .toSet();
+
+  yield* service.upcomingSessionsStream.map((sessions) {
+    return sessions.where((s) {
+      final title = s.courseTitle.trim().toLowerCase();
+      return enrolledTitles.contains(title) || (title == 'general' && enrolledTitles.contains('nlit course enrollment'));
+    }).toList();
+  });
 });
+
