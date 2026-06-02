@@ -181,3 +181,16 @@ final quizQuestionsProvider = FutureProvider.family<List<QuizQuestion>, String>(
   
   return (response as List).map((json) => QuizQuestion.fromJson(json)).toList();
 });
+
+final quizAttemptsProvider = FutureProvider<List<String>>((ref) async {
+  final supabase = Supabase.instance.client;
+  final user = supabase.auth.currentUser;
+  if (user == null) return [];
+  
+  final response = await supabase
+      .from('quiz_attempts')
+      .select('quiz_id')
+      .eq('user_email', user.email!);
+  
+  return (response as List).map((json) => json['quiz_id'] as String).toList();
+});

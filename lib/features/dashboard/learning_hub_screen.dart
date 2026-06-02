@@ -52,7 +52,8 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     final certsAsync = ref.watch(certificatesProvider);
     final upcomingAsync = ref.watch(upcomingSessionsProvider);
     final quizzesAsync = ref.watch(availableQuizzesProvider);
-
+    final quizAttemptsAsync = ref.watch(quizAttemptsProvider);
+    final attemptedQuizIds = quizAttemptsAsync.value ?? [];
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: RefreshIndicator(
@@ -62,6 +63,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ref.invalidate(upcomingSessionsProvider);
           ref.invalidate(enrolledFullCoursesProvider);
           ref.invalidate(availableQuizzesProvider);
+          ref.invalidate(quizAttemptsProvider);
           ref.invalidate(userEnrollmentsProvider);
         },
         child: CustomScrollView(
@@ -199,7 +201,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildQuizCard(context, quizzes[index]),
+                        child: _buildQuizCard(context, quizzes[index], attemptedQuizIds),
                       ),
                       childCount: quizzes.length,
                     ),
@@ -438,12 +440,25 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     return SliverFillRemaining(hasScrollBody: false, child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(LucideIcons.bookOpen, size: 64, color: Colors.grey), const SizedBox(height: 24), Text("No active enrollments", style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800)), const SizedBox(height: 32), ElevatedButton(onPressed: () => context.go('/discover'), child: const Text("Explore Courses"))])));
   }
 
-  Widget _buildQuizCard(BuildContext context, Quiz quiz) {
+  Widget _buildQuizCard(BuildContext context, Quiz quiz, List<String> attemptedQuizIds) {
     final theme = Theme.of(context);
     final isScheduledFuture = quiz.scheduledFor != null && quiz.scheduledFor!.isAfter(DateTime.now());
+    final hasAttempted = attemptedQuizIds.contains(quiz.id);
     
     return GestureDetector(
-      onTap: isScheduledFuture ? null : () => context.push('/quiz', extra: quiz),
+      onTap: () {
+        if (isScheduledFuture) return;
+        if (hasAttempted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You have already appeared for this test.'),
+              backgroundColor: Colors.amber,
+            ),
+          );
+          return;
+        }
+        context.push('/quiz', extra: quiz);
+      },
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -495,7 +510,10 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                 ],
               ),
             ),
-            Icon(isScheduledFuture ? LucideIcons.lock : LucideIcons.chevronRight, color: Colors.grey),
+            if (hasAttempted)
+              Icon(LucideIcons.checkCircle, color: Colors.green)
+            else
+              Icon(isScheduledFuture ? LucideIcons.lock : LucideIcons.chevronRight, color: Colors.grey),
           ],
         ),
       ),
