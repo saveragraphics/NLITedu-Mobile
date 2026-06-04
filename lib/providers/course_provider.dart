@@ -132,7 +132,7 @@ final List<Course> staticCourses = [
     imageUrl: "https://www.nlitedu.com/fontimage/python.png",
     category: "DATA SCIENCE",
     categoryColor: Colors.blue,
-    duration: "10 Weeks",
+    duration: "9 Months",
     level: "Beginner",
     rating: 4.7,
     price: "₹999*",

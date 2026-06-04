@@ -209,6 +209,95 @@ class CourseContentView extends ConsumerWidget {
             error: (e, s) => const SliverToBoxAdapter(child: SizedBox.shrink()),
           ),
 
+          // ──── Study Materials Section ────
+          ref.watch(studyMaterialsProvider(course.title)).when(
+            data: (materials) {
+              if (materials.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+              
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(LucideIcons.fileText, color: Colors.blue, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Text("Study Materials", 
+                            style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: materials.length,
+                          itemBuilder: (context, index) {
+                            final m = materials[index];
+                            return GestureDetector(
+                              onTap: () async {
+                                final uri = Uri.parse(m.documentUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              child: Container(
+                                width: 200,
+                                margin: const EdgeInsets.only(right: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerLowest,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(LucideIcons.fileText, size: 32, color: Colors.blue),
+                                    const Spacer(),
+                                    Text(
+                                      m.topic,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Tap to open PDF",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+            error: (e, s) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+          ),
+
           // ──── Curriculum Section ────
           SliverToBoxAdapter(
             child: Padding(
