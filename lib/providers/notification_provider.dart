@@ -34,13 +34,16 @@ class NotificationWatcher {
   StreamSubscription? _liveSubscription;
   StreamSubscription? _upcomingSubscription;
   StreamSubscription? _authSubscription;
+  StreamSubscription? _materialsSubscription;
   
   // Track which sessions we've already notified about to avoid duplicates
   final Set<String> _notifiedLiveSessions = {};
   final Set<String> _scheduledReminders = {};
+  final Set<String> _notifiedMaterials = {};
 
   static const String _notifiedLiveKey = 'notified_live_sessions';
   static const String _scheduledRemindersKey = 'scheduled_reminders_sessions';
+  static const String _notifiedMaterialsKey = 'notified_materials';
 
   NotificationWatcher(this._notifService, this._supabase) {
     // Watch auth changes to dynamically start and stop watching
@@ -62,6 +65,7 @@ class NotificationWatcher {
     final prefs = await SharedPreferences.getInstance();
     _notifiedLiveSessions.addAll(prefs.getStringList(_notifiedLiveKey) ?? []);
     _scheduledReminders.addAll(prefs.getStringList(_scheduledRemindersKey) ?? []);
+    _notifiedMaterials.addAll(prefs.getStringList(_notifiedMaterialsKey) ?? []);
 
     final user = _supabase.auth.currentUser;
     if (user == null) return;
@@ -69,8 +73,10 @@ class NotificationWatcher {
     // Cancel existing subscriptions to avoid duplicates
     await _liveSubscription?.cancel();
     await _upcomingSubscription?.cancel();
+    await _materialsSubscription?.cancel();
     _liveSubscription = null;
     _upcomingSubscription = null;
+    _materialsSubscription = null;
 
     // Helper to check dynamic enrollment
     Future<bool> checkUserEnrollment(String courseTitle) async {
@@ -152,6 +158,47 @@ class NotificationWatcher {
       }
     });
 
+    // Watch new study materials
+    _materialsSubscription = retryStreamWithAuth<List<Map<String, dynamic>>>(() => _supabase
+        .from('study_materials')
+        .stream(primaryKey: ['id']))
+        .listen((rows) async {
+      final isPushEnabled = await NotificationPrefs.isEnabled(NotificationPrefs.pushEnabled);
+      if (!isPushEnabled) return;
+
+      // Ensure we only notify for newly added materials, not old ones on first load
+      final now = DateTime.now();
+
+      for (final row in rows) {
+        final materialId = row['id'].toString();
+        final courseTitle = row['course_title'] as String;
+        final topic = row['topic'] as String;
+        final createdAtStr = row['created_at'] as String?;
+        
+        if (createdAtStr == null) continue;
+        
+        final createdAt = DateTime.tryParse(createdAtStr);
+        if (createdAt == null) continue;
+        
+        // Skip notifying if the material is older than 24 hours (prevents flood on first load)
+        if (now.difference(createdAt).inHours > 24) {
+          if (!_notifiedMaterials.contains(materialId)) {
+            _notifiedMaterials.add(materialId);
+            await prefs.setStringList(_notifiedMaterialsKey, _notifiedMaterials.toList());
+          }
+          continue;
+        }
+
+        final isEnrolled = await checkUserEnrollment(courseTitle);
+        
+        if (isEnrolled && !_notifiedMaterials.contains(materialId)) {
+          _notifiedMaterials.add(materialId);
+          await prefs.setStringList(_notifiedMaterialsKey, _notifiedMaterials.toList());
+          await _notifService.showNewMaterialNotification(id: materialId, courseTitle: courseTitle, topic: topic);
+        }
+      }
+    });
+
     // Fetch and schedule quiz reminders
     try {
       final enrollments = await _supabase
@@ -202,6 +249,7 @@ class NotificationWatcher {
   void dispose() {
     _liveSubscription?.cancel();
     _upcomingSubscription?.cancel();
+    _materialsSubscription?.cancel();
     _authSubscription?.cancel();
   }
 }

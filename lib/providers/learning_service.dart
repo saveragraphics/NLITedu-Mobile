@@ -138,6 +138,17 @@ class LearningService {
     
     return (response as List).map((json) => RecordedSession.fromJson(json)).toList();
   }
+
+  /// Fetch study materials for a specific course
+  Future<List<StudyMaterial>> fetchStudyMaterialsByCourse(String courseTitle) async {
+    final response = await _supabase
+        .from('study_materials')
+        .select()
+        .eq('course_title', courseTitle)
+        .order('created_at', ascending: false);
+    
+    return (response as List).map((json) => StudyMaterial.fromJson(json)).toList();
+  }
 }
 
 final learningServiceProvider = Provider((ref) => LearningService());
@@ -193,4 +204,24 @@ final quizAttemptsProvider = FutureProvider<List<String>>((ref) async {
       .eq('user_email', user.email!);
   
   return (response as List).map((json) => json['quiz_id'] as String).toList();
+});
+
+final studyMaterialsProvider = FutureProvider.family<List<StudyMaterial>, String>((ref, courseTitle) {
+  return ref.watch(learningServiceProvider).fetchStudyMaterialsByCourse(courseTitle);
+});
+
+final enrolledStudyMaterialsProvider = FutureProvider<List<StudyMaterial>>((ref) async {
+  final supabase = Supabase.instance.client;
+  final user = supabase.auth.currentUser;
+  if (user == null) return [];
+  
+  // Get user's enrolled courses
+  final enrollmentsResp = await supabase.from('enrollments').select('course_title').eq('user_email', user.email!);
+  final enrolledTitles = (enrollmentsResp as List).map((e) => e['course_title'] as String).toList();
+  
+  if (enrolledTitles.isEmpty) return [];
+  
+  // Get study materials for those courses
+  final materialsResp = await supabase.from('study_materials').select().inFilter('course_title', enrolledTitles).order('created_at', ascending: false);
+  return (materialsResp as List).map((json) => StudyMaterial.fromJson(json)).toList();
 });

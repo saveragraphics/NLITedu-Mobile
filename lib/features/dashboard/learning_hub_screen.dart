@@ -359,7 +359,12 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
         ? "PENDING VERIFICATION"
         : (isLive ? "LIVE NOW" : "ACTIVE / ENROLLED");
     
-    final duration = enrollmentMap['duration'] as String? ?? "4 Weeks";
+    String? enrolledDuration = enrollmentMap['duration'] as String?;
+    if (enrolledDuration != null && enrolledDuration.trim().isEmpty) enrolledDuration = null;
+    
+    final duration = course.isInternship 
+        ? (enrolledDuration ?? "4 Weeks") 
+        : (enrolledDuration ?? course.duration);
 
     final progressValue = isPending ? 0.0 : 0.75;
     final progressText = isPending ? "0% Complete" : "75% Complete";
@@ -378,7 +383,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                 ),
               );
             }
-          : () => context.push('/learning-hub/view', extra: course),
+          : () => context.push('/learning-hub/view', extra: {'course': course, 'enrollmentMap': enrollmentMap}),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(32), border: Border.all(color: isPending ? Colors.amber.withOpacity(0.5) : (isLive ? Colors.red.withOpacity(0.5) : theme.colorScheme.outlineVariant.withOpacity(0.3)), width: (isLive || isPending) ? 2 : 1), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 40, offset: const Offset(0, 10))]),

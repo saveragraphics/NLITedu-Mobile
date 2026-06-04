@@ -106,3 +106,29 @@ class RecordedSession {
     );
   }
 }
+
+class StudyMaterial {
+  final String id;
+  final String topic;
+  final String documentUrl;
+  final String createdAt;
+  final String courseTitle;
+
+  StudyMaterial({
+    required this.id,
+    required this.topic,
+    required this.documentUrl,
+    required this.createdAt,
+    required this.courseTitle,
+  });
+
+  factory StudyMaterial.fromJson(Map<String, dynamic> json) {
+    return StudyMaterial(
+      id: json['id'],
+      topic: json['topic'],
+      documentUrl: json['document_url'],
+      createdAt: json['created_at'],
+      courseTitle: json['course_title'],
+    );
+  }
+}

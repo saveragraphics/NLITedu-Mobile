@@ -23,11 +23,13 @@ class NotificationService {
   static const String _liveChannelId = 'nlit_live_class';
   static const String _scheduledChannelId = 'nlit_scheduled_class';
   static const String _quizChannelId = 'nlit_quiz_exam';
+  static const String _materialChannelId = 'nlit_study_materials';
 
   // Notification ID ranges to avoid collision
   static const int _liveBaseId = 1000;
   static const int _scheduledBaseId = 2000;
   static const int _quizBaseId = 3000;
+  static const int _materialBaseId = 4000;
 
   // SharedPreferences keys for notification history
   static const String _historyKey = 'notification_history';
@@ -69,6 +71,14 @@ class NotificationService {
         const AndroidNotificationChannel(
           _quizChannelId, 'Quiz & Exam Reminders',
           description: 'Reminders for upcoming quizzes and exams',
+          importance: Importance.high,
+          playSound: true,
+        ),
+      );
+      await androidPlugin.createNotificationChannel(
+        const AndroidNotificationChannel(
+          _materialChannelId, 'Study Materials',
+          description: 'Notifications for new study materials',
           importance: Importance.high,
           playSound: true,
         ),
@@ -242,6 +252,39 @@ class NotificationService {
     });
   }
 
+  /// Show an immediate notification for new study material
+  Future<void> showNewMaterialNotification({required String id, required String courseTitle, required String topic}) async {
+    final notificationId = _materialBaseId + id.hashCode.abs() % 999;
+
+    await _plugin.show(
+      notificationId,
+      '📚 New Study Material',
+      '$topic has been added for $courseTitle',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _materialChannelId, 'Study Materials',
+          importance: Importance.high,
+          priority: Priority.high,
+          color: const Color(0xFF10B981),
+          colorized: true,
+          category: AndroidNotificationCategory.recommendation,
+          styleInformation: BigTextStyleInformation(
+            'New study material "$topic" is now available for your enrolled course "$courseTitle". Tap to view.',
+            contentTitle: '📚 New Study Material',
+          ),
+        ),
+      ),
+      payload: 'material:$id',
+    );
+
+    await _saveNotificationToHistory(
+      title: '📚 New Material: $topic',
+      body: 'Added for $courseTitle',
+      type: 'material',
+      courseId: courseTitle,
+    );
+  }
+
   /// Cancel all pending notifications
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
@@ -378,6 +421,7 @@ class NotificationItem {
       case 'live': return const Color(0xFFEF4444);
       case 'scheduled': return const Color(0xFF3B82F6);
       case 'quiz': return const Color(0xFF8B5CF6);
+      case 'material': return const Color(0xFF10B981);
       default: return const Color(0xFF6B7280);
     }
   }
@@ -387,6 +431,7 @@ class NotificationItem {
       case 'live': return 'LIVE CLASS';
       case 'scheduled': return 'SCHEDULED';
       case 'quiz': return 'QUIZ/EXAM';
+      case 'material': return 'NEW MATERIAL';
       default: return 'NOTIFICATION';
     }
   }

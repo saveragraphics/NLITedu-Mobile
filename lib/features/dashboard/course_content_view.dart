@@ -12,29 +12,26 @@ import '../course/secure_video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../profile/profile_provider.dart';
+import '../../providers/enrollment_service.dart';
 
 class CourseContentView extends ConsumerWidget {
   final Course course;
+  final Map<String, dynamic> enrollmentMap;
 
-  const CourseContentView({super.key, required this.course});
+  const CourseContentView({super.key, required this.course, required this.enrollmentMap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final recordingsAsync = ref.watch(courseRecordingsProvider(course.title));
+    final queryTitle = enrollmentMap['course_title'] as String? ?? course.title;
+    final recordingsAsync = ref.watch(courseRecordingsProvider(queryTitle));
     final profile = ref.watch(profileProvider);
-    final enrollmentsAsync = ref.watch(userEnrollmentsProvider);
+    String? enrolledDuration = enrollmentMap['duration'] as String?;
+    if (enrolledDuration != null && enrolledDuration.trim().isEmpty) enrolledDuration = null;
     
-    String displayDuration = course.duration;
-    if (enrollmentsAsync.value != null) {
-      final eMap = enrollmentsAsync.value!.firstWhere(
-        (e) => (e['course_title'] as String).trim().toLowerCase() == course.title.trim().toLowerCase(),
-        orElse: () => <String, dynamic>{},
-      );
-      if (eMap['duration'] != null && eMap['duration'].toString().isNotEmpty) {
-        displayDuration = eMap['duration'] as String;
-      }
-    }
+    String displayDuration = course.isInternship 
+        ? (enrolledDuration ?? "4 Weeks") 
+        : (enrolledDuration ?? course.duration);
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -222,7 +219,7 @@ class CourseContentView extends ConsumerWidget {
           ),
 
           // ──── Study Materials Section ────
-          ref.watch(studyMaterialsProvider(course.title)).when(
+          ref.watch(studyMaterialsProvider(queryTitle)).when(
             data: (materials) {
               if (materials.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
               
@@ -256,12 +253,11 @@ class CourseContentView extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final m = materials[index];
                             return GestureDetector(
-                              onTap: () async {
-                                final pdfUrl = Uri.encodeComponent(m.documentUrl);
-                                final uri = Uri.parse('https://docs.google.com/gview?embedded=true&url=$pdfUrl');
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-                                }
+                              onTap: () {
+                                context.push('/learning-hub/pdf', extra: {
+                                  'title': m.topic,
+                                  'url': m.documentUrl,
+                                });
                               },
                               child: Container(
                                 width: 200,

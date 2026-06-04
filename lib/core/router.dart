@@ -9,6 +9,7 @@ import '../features/course/course_details_screen.dart';
 import '../features/course/enrollment_form_screen.dart';
 import '../features/dashboard/learning_hub_screen.dart';
 import '../features/dashboard/course_content_view.dart';
+import '../features/dashboard/pdf_viewer_screen.dart';
 import '../features/dashboard/achievement_screen.dart';
 import '../features/dashboard/quiz_player_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -143,10 +144,26 @@ final router = GoRouter(
             GoRoute(
               path: 'view',
               builder: (context, state) {
-                if (state.extra is Course) {
-                  return CourseContentView(course: state.extra as Course);
+                if (state.extra is Map<String, dynamic>) {
+                  final extra = state.extra as Map<String, dynamic>;
+                  return CourseContentView(
+                    course: extra['course'] as Course,
+                    enrollmentMap: extra['enrollmentMap'] as Map<String, dynamic>,
+                  );
+                } else if (state.extra is Course) {
+                  return CourseContentView(course: state.extra as Course, enrollmentMap: const {});
                 }
                 return const Scaffold(body: Center(child: Text('Course data missing')));
+              },
+            ),
+            GoRoute(
+              path: 'pdf',
+              builder: (context, state) {
+                if (state.extra is Map<String, String>) {
+                  final data = state.extra as Map<String, String>;
+                  return PdfViewerScreen(title: data['title']!, pdfUrl: data['url']!);
+                }
+                return const Scaffold(body: Center(child: Text('PDF data missing')));
               },
             ),
           ],
