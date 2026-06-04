@@ -23,6 +23,18 @@ class CourseContentView extends ConsumerWidget {
     final theme = Theme.of(context);
     final recordingsAsync = ref.watch(courseRecordingsProvider(course.title));
     final profile = ref.watch(profileProvider);
+    final enrollmentsAsync = ref.watch(userEnrollmentsProvider);
+    
+    String displayDuration = course.duration;
+    if (enrollmentsAsync.value != null) {
+      final eMap = enrollmentsAsync.value!.firstWhere(
+        (e) => (e['course_title'] as String).trim().toLowerCase() == course.title.trim().toLowerCase(),
+        orElse: () => <String, dynamic>{},
+      );
+      if (eMap['duration'] != null && eMap['duration'].toString().isNotEmpty) {
+        displayDuration = eMap['duration'] as String;
+      }
+    }
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -74,7 +86,7 @@ class CourseContentView extends ConsumerWidget {
                 children: [
                    _statChip(LucideIcons.bookOpen, "${course.syllabus.length} Modules"),
                    const SizedBox(width: 12),
-                   _statChip(LucideIcons.clock, course.duration),
+                   _statChip(LucideIcons.clock, displayDuration),
                    const SizedBox(width: 12),
                    _statChip(LucideIcons.award, "Certification"),
                 ],
