@@ -245,9 +245,10 @@ class CourseContentView extends ConsumerWidget {
                             final m = materials[index];
                             return GestureDetector(
                               onTap: () async {
-                                final uri = Uri.parse(m.documentUrl);
+                                final pdfUrl = Uri.encodeComponent(m.documentUrl);
+                                final uri = Uri.parse('https://docs.google.com/gview?embedded=true&url=$pdfUrl');
                                 if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
                                 }
                               },
                               child: Container(

@@ -54,6 +54,8 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     final quizzesAsync = ref.watch(availableQuizzesProvider);
     final quizAttemptsAsync = ref.watch(quizAttemptsProvider);
     final attemptedQuizIds = quizAttemptsAsync.value ?? [];
+    final studyMaterialsAsync = ref.watch(enrolledStudyMaterialsProvider);
+    
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: RefreshIndicator(
@@ -65,6 +67,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
           ref.invalidate(availableQuizzesProvider);
           ref.invalidate(quizAttemptsProvider);
           ref.invalidate(userEnrollmentsProvider);
+          ref.invalidate(enrolledStudyMaterialsProvider);
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -156,7 +159,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
 
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 24),
-                          child: _buildNexgenCourseCard(context, course, session, status),
+                          child: _buildNexgenCourseCard(context, course, session, enrollmentMap),
                         );
                       },
                       childCount: courses.length,
@@ -168,27 +171,6 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
               error: (e, _) => SliverToBoxAdapter(child: Center(child: Text("Error fetching courses"))),
             ),
 
-            // ──── Certifications ────
-            _buildShelfHeader("Recently Completed", actionText: "View All"),
-            certsAsync.when(
-              data: (certs) {
-                if (certs.isEmpty) return _buildNoDataMessage("No certificates earned yet.");
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: CertificationCard(cert: certs[index]),
-                      ),
-                      childCount: certs.length,
-                    ),
-                  ),
-                );
-              },
-              loading: () => const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.all(24), child: LinearProgressIndicator())),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
 
             // ──── Tests & Assessments ────
             _buildShelfHeader("Tests & Assessments"),
@@ -362,7 +344,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
     return FadeTransition(opacity: _pulseController, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(8)), child: Text("LIVE", style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white))));
   }
 
-  Widget _buildNexgenCourseCard(BuildContext context, Course course, LiveSession? session, String status) {
+  Widget _buildNexgenCourseCard(BuildContext context, Course course, LiveSession? session, Map<String, dynamic> enrollmentMap) {
     final theme = Theme.of(context);
     final isLive = session != null;
     final isPending = false;
@@ -377,6 +359,8 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
         ? "PENDING VERIFICATION"
         : (isLive ? "LIVE NOW" : "ACTIVE / ENROLLED");
     
+    final duration = enrollmentMap['duration'] as String? ?? "4 Weeks";
+
     final progressValue = isPending ? 0.0 : 0.75;
     final progressText = isPending ? "0% Complete" : "75% Complete";
     final lessonsText = isPending ? "0 / 16 Lessons" : "12 / 16 Lessons";
@@ -411,7 +395,7 @@ class _LearningHubScreenState extends ConsumerState<LearningHubScreen> with Sing
                       Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(6)), child: Text(statusText, style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w900, color: statusColor))),
                       const SizedBox(height: 8),
                       Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
-                      Text(isPending ? "Verification in progress" : "Module 4: Advanced Systems", style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                      Text("Duration: $duration", style: GoogleFonts.inter(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
