@@ -2,6 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/learning_models.dart';
 import '../models/quiz_models.dart';
+import '../models/course.dart';
+import 'enrollment_service.dart';
 
 class LearningService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -179,7 +181,25 @@ final availableQuizzesProvider = FutureProvider<List<Quiz>>((ref) async {
       .eq('is_active', true)
       .order('created_at', ascending: false);
   
-  return (response as List).map((json) => Quiz.fromJson(json)).toList();
+  final allQuizzes = (response as List).map((json) => Quiz.fromJson(json)).toList();
+
+  // Get user's enrolled courses to filter
+  List<Course> enrolledCourses = [];
+  try {
+    enrolledCourses = await ref.watch(enrolledFullCoursesProvider.future);
+  } catch (e) {
+    print('Failed to get enrolled courses: $e');
+  }
+  
+  final enrolledSlugs = enrolledCourses.map((c) => c.slug.toLowerCase().trim()).toSet();
+
+  return allQuizzes.where((quiz) {
+    final quizSlug = quiz.courseSlug.toLowerCase().trim();
+    if (quizSlug.isEmpty || quizSlug == 'global') {
+      return true;
+    }
+    return enrolledSlugs.contains(quizSlug);
+  }).toList();
 });
 
 final quizQuestionsProvider = FutureProvider.family<List<QuizQuestion>, String>((ref, quizId) async {
