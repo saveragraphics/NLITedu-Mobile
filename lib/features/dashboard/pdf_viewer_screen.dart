@@ -3,6 +3,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PdfViewerScreen extends StatelessWidget {
   final String title;
@@ -28,7 +29,35 @@ class PdfViewerScreen extends StatelessWidget {
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.download, color: Colors.white),
+            tooltip: 'Download PDF',
+            onPressed: () async {
+              final uri = Uri.parse(pdfUrl);
+              try {
+                final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                if (!launched) {
+                  await launchUrl(uri, mode: LaunchMode.platformDefault);
+                }
+              } catch (e) {
+                try {
+                  await launchUrl(uri, mode: LaunchMode.platformDefault);
+                } catch (_) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Could not open/download PDF")),
+                    );
+                  }
+                }
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SfPdfViewer.network(
         pdfUrl,

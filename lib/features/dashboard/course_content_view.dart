@@ -271,7 +271,46 @@ class CourseContentView extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(LucideIcons.fileText, size: 32, color: Colors.blue),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Icon(LucideIcons.fileText, size: 32, color: Colors.blue),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.withOpacity(0.08),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: IconButton(
+                                            icon: const Icon(LucideIcons.download, size: 16, color: Colors.blue),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(
+                                              minWidth: 32,
+                                              minHeight: 32,
+                                            ),
+                                            tooltip: 'Download PDF',
+                                            onPressed: () async {
+                                              final uri = Uri.parse(m.documentUrl);
+                                              try {
+                                                final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                if (!launched) {
+                                                  await launchUrl(uri, mode: LaunchMode.platformDefault);
+                                                }
+                                              } catch (e) {
+                                                try {
+                                                  await launchUrl(uri, mode: LaunchMode.platformDefault);
+                                                } catch (_) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text("Could not open/download PDF")),
+                                                    );
+                                                  }
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                     const Spacer(),
                                     Text(
                                       m.topic,
