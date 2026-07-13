@@ -236,7 +236,7 @@ final enrolledStudyMaterialsProvider = FutureProvider<List<StudyMaterial>>((ref)
   if (user == null) return [];
   
   // Get user's enrolled courses
-  final enrollmentsResp = await supabase.from('enrollments').select('course_title').eq('user_email', user.email!);
+  final enrollmentsResp = await supabase.from('enrollments').select('course_title').eq('email', user.email!);
   final enrolledTitles = (enrollmentsResp as List).map((e) => e['course_title'] as String).toList();
   
   if (enrolledTitles.isEmpty) return [];
