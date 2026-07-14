@@ -23,6 +23,7 @@ class Course {
   final bool isLegacyPricing;
 
   final bool isInternship;
+  final String? programType;
 
   Course({
     required this.title,
@@ -46,6 +47,7 @@ class Course {
     this.jobPrice = 0,
     this.isLegacyPricing = false,
     this.isInternship = false,
+    this.programType,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
@@ -100,6 +102,7 @@ class Course {
       jobPrice: (map['job_price'] ?? 0).toDouble(),
       isLegacyPricing: parseBool(map['is_legacy_pricing']),
       isInternship: isInternship,
+      programType: map['program_type'],
     );
   }
 }

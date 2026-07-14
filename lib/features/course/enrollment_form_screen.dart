@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -104,6 +106,90 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
       _emailController.text = user.email ?? '';
     }
     _selectedCourse = widget.course.title;
+
+    _loadDraft();
+
+    // Setup listeners for auto-save
+    _fullNameController.addListener(_saveDraft);
+    _fatherNameController.addListener(_saveDraft);
+    _emailController.addListener(_saveDraft);
+    _whatsappController.addListener(_saveDraft);
+    _branchController.addListener(_saveDraft);
+    _collegeNameController.addListener(_saveDraft);
+    _brnController.addListener(_saveDraft);
+    _marks10Controller.addListener(_saveDraft);
+    _marks12Controller.addListener(_saveDraft);
+    _marksSemController.addListener(_saveDraft);
+    _messageController.addListener(_saveDraft);
+  }
+
+  Future<void> _loadDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final draftStr = prefs.getString('nlitedu_enrollment_draft_${widget.course.slug}');
+    if (draftStr != null) {
+      try {
+        final draft = json.decode(draftStr);
+        setState(() {
+          _fullNameController.text = draft['fullName'] ?? '';
+          _fatherNameController.text = draft['fatherName'] ?? '';
+          _gender = draft['gender'];
+          _emailController.text = draft['email'] ?? _emailController.text;
+          _whatsappController.text = draft['whatsapp'] ?? '';
+          if (draft['dob'] != null) _dob = DateTime.tryParse(draft['dob']);
+          
+          _qualification = draft['qualification'];
+          _branchController.text = draft['branch'] ?? '';
+          _semester = draft['semester'];
+          _collegeNameController.text = draft['collegeName'] ?? '';
+          _brnController.text = draft['brn'] ?? '';
+          _collegeType = draft['collegeType'];
+          _state = draft['state'];
+          
+          _marks10Controller.text = draft['marks10'] ?? '';
+          _marks12Controller.text = draft['marks12'] ?? '';
+          _marksSemController.text = draft['marksSem'] ?? '';
+          
+          if (draft['selectedCourse'] != null) _selectedCourse = draft['selectedCourse'];
+          _duration = draft['duration'];
+          _internshipMode = draft['internshipMode'];
+          _messageController.text = draft['message'] ?? '';
+        });
+      } catch (e) {
+        debugPrint('Error loading draft: $e');
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final draft = {
+      'fullName': _fullNameController.text,
+      'fatherName': _fatherNameController.text,
+      'gender': _gender,
+      'email': _emailController.text,
+      'whatsapp': _whatsappController.text,
+      'dob': _dob?.toIso8601String(),
+      'qualification': _qualification,
+      'branch': _branchController.text,
+      'semester': _semester,
+      'collegeName': _collegeNameController.text,
+      'brn': _brnController.text,
+      'collegeType': _collegeType,
+      'state': _state,
+      'selectedCourse': _selectedCourse,
+      'duration': _duration,
+      'internshipMode': _internshipMode,
+      'message': _messageController.text,
+      'marks10': _marks10Controller.text,
+      'marks12': _marks12Controller.text,
+      'marksSem': _marksSemController.text,
+    };
+    await prefs.setString('nlitedu_enrollment_draft_${widget.course.slug}', json.encode(draft));
+  }
+
+  Future<void> _clearDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('nlitedu_enrollment_draft_${widget.course.slug}');
   }
 
   void _handlePaymentVerify(String orderId) async {
@@ -115,6 +201,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
       await ref.read(enrollmentServiceProvider).confirmPayment(orderId);
       // Invalidate the enrolled status to update UI immediately
       ref.invalidate(isEnrolledProvider(widget.course.title));
+      await _clearDraft();
       
       if (mounted) {
         context.go('/learning-hub');
@@ -272,6 +359,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'original_mrp': _displayPrice,
         'fee_paid': _currentFee,
         'gateway_type': 'cashfree',
+        'enrollment_type': widget.course.programType?.toLowerCase() ?? (widget.course.isInternship ? 'internship' : 'foundation'),
       };
 
       // 3. Initiate Payment
@@ -417,7 +505,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                       _buildDropdownField(
                         'Gender', 
                         ['Male', 'Female', 'Other'], 
-                        (val) => setState(() => _gender = val),
+                        (val) { setState(() => _gender = val); _saveDraft(); },
                         value: _gender,
                       ),
                       _buildTextField(_whatsappController, 'WhatsApp Number', LucideIcons.phone, keyboardType: TextInputType.phone),
@@ -433,14 +521,14 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                        _buildDropdownField(
                         'Qualification', 
                         ['Diploma', 'B-Tech', 'BCA', 'MCA', 'BBA/BMS', 'MBA', 'MBBS', 'B.Pharma'], 
-                        (val) => setState(() => _qualification = val),
+                        (val) { setState(() => _qualification = val); _saveDraft(); },
                         value: _qualification,
                       ),
                       _buildTextField(_branchController, 'Branch/Specialization', LucideIcons.briefcase),
                       _buildDropdownField(
                         'Semester', 
                         ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', 'Passed Out'], 
-                        (val) => setState(() => _semester = val),
+                        (val) { setState(() => _semester = val); _saveDraft(); },
                         value: _semester,
                       ),
                       _buildTextField(_collegeNameController, 'College Name', LucideIcons.school),
@@ -452,35 +540,35 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                       _buildDropdownField(
                         'College Type', 
                         ['Government', 'Private', 'Job Professional'], 
-                        (val) => setState(() => _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job')),
+                        (val) { setState(() => _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job')); _saveDraft(); },
                         value: _collegeType == 'govt' ? 'Government' : (_collegeType == 'private' ? 'Private' : (_collegeType == 'job' ? 'Job Professional' : null)),
                       ),
 
                        _buildDropdownField(
                         'State', 
                         _states, 
-                        (val) => setState(() => _state = val),
+                        (val) { setState(() => _state = val); _saveDraft(); },
                         value: _state,
                       ),
                       if (widget.course.slug == 'general')
                         _buildDropdownField(
                           'Choose Course', 
                           _courseOptions, 
-                          (val) => setState(() => _selectedCourse = val),
+                          (val) { setState(() => _selectedCourse = val); _saveDraft(); },
                           value: _selectedCourse,
                         ),
                       if (widget.course.isInternship)
                         _buildDropdownField(
                           'Internship Mode', 
                           ['Online', 'Online + Offline'], 
-                          (val) => setState(() => _internshipMode = val),
+                          (val) { setState(() => _internshipMode = val); _saveDraft(); },
                           value: _internshipMode,
                         ),
                       if (widget.course.isInternship)
                         _buildDropdownField(
                           'Internship Duration', 
                           ['2 Weeks', '4 Weeks', '6 Weeks', '8 Weeks'], 
-                          (val) => setState(() => _duration = val),
+                          (val) { setState(() => _duration = val); _saveDraft(); },
                           value: _duration,
                         ),
                       _buildTextField(_messageController, 'Message (Optional)', LucideIcons.messageCircle, required: false),
@@ -583,7 +671,10 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
             firstDate: DateTime(1980),
             lastDate: DateTime.now(),
           );
-          if (date != null) setState(() => _dob = date);
+          if (date != null) {
+            setState(() => _dob = date);
+            _saveDraft();
+          }
         },
         child: InputDecorator(
           decoration: InputDecoration(
