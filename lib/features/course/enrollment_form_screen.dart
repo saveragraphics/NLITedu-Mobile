@@ -47,6 +47,92 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   String? _collegeType;
   String? _state;
 
+  String _selectedBiharGovtCollege = '';
+  String _collegeSearchQuery = '';
+
+  static const List<String> _biharGovtColleges = [
+    "B.C.E BHAGALPUR",
+    "D.C.E DARBHANGA",
+    "G.E.C ARARIA",
+    "G.E.C ARWAL",
+    "G.E.C AURANGABAD",
+    "G.E.C BANKA",
+    "G.E.C BEGUSARAI",
+    "G.E.C BHOJPUR",
+    "G.E.C BUXAR",
+    "G.E.C GAYA",
+    "G.E.C GOPALGANJ",
+    "G.E.C JAMUI",
+    "G.E.C JEHANABAD",
+    "G.E.C KAIMUR",
+    "G.E.C KATIHAR",
+    "G.E.C KHAGARIA",
+    "G.E.C KISHANGANJ",
+    "G.E.C LAKHISARAI",
+    "G.E.C MADHEPURA",
+    "G.E.C MADHUBANI",
+    "G.E.C MUNGER",
+    "G.E.C MUZAFFARPUR",
+    "G.E.C NAWADA",
+    "G.E.C PURNEA",
+    "G.E.C SAHARSA",
+    "G.E.C SAMASTIPUR",
+    "G.E.C SARAN",
+    "G.E.C SHEIKHPURA",
+    "G.E.C SHEOHAR",
+    "G.E.C SIWAN",
+    "G.E.C SUPAUL",
+    "G.E.C VAISHALI",
+    "G.E.C WEST CHAMPARAN",
+    "L.J.P.I.T SARAN",
+    "M.C.E MOTIHARI",
+    "N.C.E NALANDA",
+    "N.S.I.T PATNA",
+    "G.P PATNA",
+    "N.G.P PATNA",
+    "G.W.P PATNA",
+    "G.P MUZAFFARPUR",
+    "G.W.P MUZAFFARPUR",
+    "G.P GAYA",
+    "G.P TEKARI",
+    "G.P BHAGALPUR",
+    "G.P DARBHANGA",
+    "G.P BARAUNI",
+    "G.P SAHARSA",
+    "G.P PURNEA",
+    "G.P KATIHAR",
+    "G.P MOTIHARI",
+    "G.P BETTIAH",
+    "G.P CHAPRA",
+    "G.P GOPALGANJ",
+    "G.P VAISHALI",
+    "G.P LAKHISARAI",
+    "G.P ASTHAWAN",
+    "G.P DEHRI-ON-SONE",
+    "G.P MADHUBANI",
+    "G.P SHEOHAR",
+    "G.P SITAMARHI",
+    "G.P SIWAN",
+    "G.P AURANGABAD",
+    "G.P ARARIA",
+    "G.P ARWAL",
+    "G.P BANKA",
+    "G.P BHOJPUR",
+    "G.P BUXAR",
+    "G.P JAMUI",
+    "G.P JEHANABAD",
+    "G.P KAIMUR",
+    "G.P KHAGARIA",
+    "G.P KISHANGANJ",
+    "G.P MADHEPURA",
+    "G.P MUNGER",
+    "G.P NAWADA",
+    "G.P SAMASTIPUR",
+    "G.P SHEIKHPURA",
+    "G.P SUPAUL",
+    "OTHER (in case college name not listed)"
+  ];
+
   final _marks10Controller = TextEditingController();
   final _marks12Controller = TextEditingController();
   final _marksSemController = TextEditingController();
@@ -82,6 +168,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
   File? _marksheet12;
   File? _marksheetSem;
+  File? _collegeIdFile;
   final _messageController = TextEditingController();
 
   late CFPaymentGatewayService _cfPaymentGatewayService;
@@ -145,10 +232,18 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
           _qualification = draft['qualification'];
           _branchController.text = draft['branch'] ?? '';
           _semester = draft['semester'];
-          _collegeNameController.text = draft['collegeName'] ?? '';
+           _collegeNameController.text = draft['collegeName'] ?? '';
           _brnController.text = draft['brn'] ?? '';
           _collegeType = draft['collegeType'];
           _state = draft['state'];
+          
+          if (_state == 'Bihar' && _collegeType == 'govt' && _collegeNameController.text.isNotEmpty) {
+            if (_biharGovtColleges.contains(_collegeNameController.text)) {
+              _selectedBiharGovtCollege = _collegeNameController.text;
+            } else {
+              _selectedBiharGovtCollege = 'OTHER (in case college name not listed)';
+            }
+          }
           
           _marks10Controller.text = draft['marks10'] ?? '';
           _marks12Controller.text = draft['marks12'] ?? '';
@@ -255,7 +350,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage(bool isSem) async {
+  Future<void> _pickImage(String type) async {
     final pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 70,
@@ -263,10 +358,12 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
     if (pickedFile != null) {
       setState(() {
-        if (isSem) {
+        if (type == 'sem') {
           _marksheetSem = File(pickedFile.path);
-        } else {
+        } else if (type == '12') {
           _marksheet12 = File(pickedFile.path);
+        } else if (type == 'collegeId') {
+          _collegeIdFile = File(pickedFile.path);
         }
       });
     }
@@ -339,6 +436,9 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         _marks10Controller.text.isNotEmpty &&
         _marksSemController.text.isNotEmpty &&
         (!course.isInternship || (_duration != null && _internshipMode != null));
+    if (_collegeType == 'job') {
+      return baseComplete && _collegeIdFile != null;
+    }
     return baseComplete;
   }
 
@@ -360,22 +460,22 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     
-    // TEMPORARY: Make file upload optional for emulator testing
-    // if ((_marksheet12 == null && _marksheetSem == null) || (_marksheet12 != null && _marksheetSem != null)) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('Please upload ONLY ONE certificate (10th/12th OR Semester marksheet).')),
-    //   );
-    //   return;
-    // }
+    if (_collegeType == 'job' && _collegeIdFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload your ID Card / Employee ID Card.')),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
     try {
       final service = ref.read(enrollmentServiceProvider);
       
-      // 1. Upload file to Cloudinary (only one will be non-null)
+      // 1. Upload file to Cloudinary
       String? url12;
       String? urlSem;
+      String? urlCollegeId;
       
       if (_marksheet12 != null) {
         url12 = await service.uploadToCloudinary(_marksheet12!);
@@ -383,6 +483,9 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         urlSem = await service.uploadToCloudinary(_marksheetSem!);
       }
 
+      if (_collegeIdFile != null) {
+        urlCollegeId = await service.uploadToCloudinary(_collegeIdFile!);
+      }
 
       // 2. Prepare enrollment data — must match website columns exactly
       final user = Supabase.instance.client.auth.currentUser;
@@ -401,7 +504,16 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'college_type': _collegeType,
         'state': _state,
         'course_title': _resolvedCourse.title,
-        'message': _resolvedCourse.isInternship && _internshipMode != null ? '[Internship Mode: $_internshipMode] ${_messageController.text}' : _messageController.text,
+        'message': (() {
+          String msg = _messageController.text;
+          if (_resolvedCourse.isInternship && _internshipMode != null) {
+            msg = '[Internship Mode: $_internshipMode] $msg';
+          }
+          if (urlCollegeId != null) {
+            msg = '[Job ID Card: $urlCollegeId] $msg';
+          }
+          return msg;
+        })(),
         'marks10': _marks10Controller.text,
         'marks12': _marks12Controller.text,
         'marksSem': _marksSemController.text,
@@ -592,24 +704,45 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                         (val) { setState(() => _semester = val); _saveDraft(); },
                         value: _semester,
                       ),
-                      _buildTextField(_collegeNameController, 'College Name', LucideIcons.school),
-                      _buildTextField(
-                        _brnController, 
-                        _collegeType == 'job' ? 'Job / Employee ID' : 'Registration/Roll No.', 
-                        LucideIcons.hash,
+                      _buildDropdownField(
+                        'State', 
+                        _states, 
+                        (val) { 
+                          setState(() {
+                            _state = val;
+                            if (_state != 'Bihar' || _collegeType != 'govt') {
+                              _selectedBiharGovtCollege = '';
+                            }
+                          }); 
+                          _saveDraft(); 
+                        },
+                        value: _state,
                       ),
                       _buildDropdownField(
                         'College Type', 
                         ['Government', 'Private', 'Job Professional'], 
-                        (val) { setState(() => _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job')); _saveDraft(); },
+                        (val) { 
+                          setState(() {
+                            _collegeType = val == 'Government' ? 'govt' : (val == 'Private' ? 'private' : 'job');
+                            if (_state != 'Bihar' || _collegeType != 'govt') {
+                              _selectedBiharGovtCollege = '';
+                            }
+                          }); 
+                          _saveDraft(); 
+                        },
                         value: _collegeType == 'govt' ? 'Government' : (_collegeType == 'private' ? 'Private' : (_collegeType == 'job' ? 'Job Professional' : null)),
                       ),
-
-                       _buildDropdownField(
-                        'State', 
-                        _states, 
-                        (val) { setState(() => _state = val); _saveDraft(); },
-                        value: _state,
+                      if (_state == 'Bihar' && _collegeType == 'govt') ...[
+                        _buildBiharGovtCollegeSelector(),
+                        if (_selectedBiharGovtCollege == 'OTHER (in case college name not listed)')
+                          _buildTextField(_collegeNameController, 'Specify College Name', LucideIcons.school),
+                      ] else ...[
+                        _buildTextField(_collegeNameController, 'College Name', LucideIcons.school),
+                      ],
+                      _buildTextField(
+                        _brnController, 
+                        _collegeType == 'job' ? 'Job / Employee ID' : 'Registration/Roll No.', 
+                        LucideIcons.hash,
                       ),
                       if (widget.course.slug == 'general')
                         _buildDropdownField(
@@ -652,16 +785,24 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                       _buildFileUpload(
                         '10th/12th Marksheet', 
                         _marksheet12, 
-                        () => _pickImage(false),
+                        () => _pickImage('12'),
                         isDisabled: _marksheetSem != null,
                       ),
                       const SizedBox(height: 12),
                       _buildFileUpload(
                         'Last Semester Marksheet', 
                         _marksheetSem, 
-                        () => _pickImage(true),
+                        () => _pickImage('sem'),
                         isDisabled: _marksheet12 != null,
                       ),
+                      if (_collegeType == 'job') ...[
+                        const SizedBox(height: 12),
+                        _buildFileUpload(
+                          'Upload ID Card / Employee ID Card', 
+                          _collegeIdFile, 
+                          () => _pickImage('collegeId'),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -776,5 +917,139 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildBiharGovtCollegeSelector() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: _showBiharGovtCollegeSearchModal,
+        child: IgnorePointer(
+          child: TextFormField(
+            key: ValueKey(_selectedBiharGovtCollege),
+            initialValue: _selectedBiharGovtCollege.isEmpty ? null : _selectedBiharGovtCollege,
+            decoration: InputDecoration(
+              labelText: 'College Name',
+              hintText: 'Select Government College',
+              prefixIcon: const Icon(LucideIcons.school, size: 20, color: Colors.grey),
+              suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBiharGovtCollegeSearchModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = _collegeSearchQuery.toLowerCase();
+            final filtered = _biharGovtColleges.where((col) {
+              return col.toLowerCase().contains(query);
+            }).toList();
+
+            const otherOption = "OTHER (in case college name not listed)";
+            if (!filtered.contains(otherOption)) {
+              filtered.add(otherOption);
+            }
+
+            return Container(
+              padding: EdgeInsets.only(
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Search Government College',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    onChanged: (val) {
+                      setModalState(() {
+                        _collegeSearchQuery = val;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search college...',
+                      prefixIcon: const Icon(LucideIcons.search, size: 20, color: Colors.grey),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final college = filtered[index];
+                        final isSelected = _selectedBiharGovtCollege == college;
+                        return ListTile(
+                          title: Text(
+                            college,
+                            style: GoogleFonts.inter(
+                              color: isSelected ? const Color(0xFF4C00C2) : Colors.black87,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                          trailing: isSelected 
+                              ? const Icon(LucideIcons.check, color: Color(0xFF4C00C2)) 
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedBiharGovtCollege = college;
+                              if (college == otherOption) {
+                                _collegeNameController.text = '';
+                              } else {
+                                _collegeNameController.text = college;
+                              }
+                            });
+                            _saveDraft();
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      _collegeSearchQuery = "";
+    });
   }
 }
