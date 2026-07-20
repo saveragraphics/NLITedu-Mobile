@@ -71,14 +71,18 @@ class Course {
 
     final slug = map['slug'] ?? '';
     final dbIsInternship = parseBool(map['is_internship']);
-    
-    // Fallback to slug list if DB flag is not set
-    final isInternship = dbIsInternship || [
-      "autocad-2d-3d-design", "java-programming", "python-programming",
-      "data-science", "artificial-intelligence", "matlab-scientific-computing",
-      "android-ios-mobile-development", "iot-embedded", "revit-bim",
-      "solidworks", "catia", "sketchup", "etabs", "general"
-    ].contains(slug);
+    final programType = map['program_type']?.toString().trim();
+    final bool isInternship;
+    if (programType != null && programType.isNotEmpty) {
+      isInternship = programType.toLowerCase() == 'internship';
+    } else {
+      isInternship = dbIsInternship || [
+        "autocad-2d-3d-design", "java-programming", "python-programming",
+        "data-science", "artificial-intelligence", "matlab-scientific-computing",
+        "android-ios-mobile-development", "iot-embedded", "revit-bim",
+        "solidworks", "catia", "sketchup", "etabs", "general"
+      ].contains(slug);
+    }
 
     return Course(
       title: map['title'] ?? '',

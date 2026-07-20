@@ -44,9 +44,24 @@ class EnrollmentService {
     'NLIT Course Enrollment': {'govt': 1999, 'private': 2999, 'job': 3999, 'display': 6999},
   };
 
-  /// Calculate enrollment fee based on college type and course title
-  double calculateFee(String collegeType, String state, {String? courseTitle, String? duration, String? internshipMode, bool isInternship = false}) {
-    final bool isIntern = isInternship || courseTitle == 'NLIT Course Enrollment' || (courseTitle != null && !coursePricing.containsKey(courseTitle));
+  /// Calculate enrollment fee based on college type, state, and course properties
+  double calculateFee(
+    String collegeType, 
+    String state, {
+    Course? course,
+    String? duration,
+    String? internshipMode,
+  }) {
+    final bool isIntern;
+    if (course != null) {
+      if (course.programType != null) {
+        isIntern = course.programType == 'Internship';
+      } else {
+        isIntern = course.slug == 'general' || course.govtPrice == 0;
+      }
+    } else {
+      isIntern = true; // Fallback if course is not provided
+    }
 
     if (isIntern) {
       if (state == 'Bihar') {
@@ -94,23 +109,28 @@ class EnrollmentService {
       return 0.0;
     }
 
-    if (courseTitle != null && coursePricing.containsKey(courseTitle)) {
-      return coursePricing[courseTitle]![collegeType] ?? 0.0;
+    if (course != null) {
+      if (collegeType == 'govt') return course.govtPrice;
+      if (collegeType == 'private') return course.pvtPrice;
+      if (collegeType == 'job') return course.jobPrice;
     }
     
-    // Fallback
-    if (collegeType == 'govt') return 1499.0;
-    if (collegeType == 'private') return 1999.0;
-    if (collegeType == 'job') return 2999.0;
     return 0.0;
   }
 
   /// Get display price for a course
-  double getDisplayPrice(String courseTitle) {
-    if (courseTitle == 'NLIT Course Enrollment' || !coursePricing.containsKey(courseTitle)) {
-      return 6999.0;
+  double getDisplayPrice(Course? course) {
+    if (course == null) return 6999.0;
+    if (course.price.isNotEmpty && course.price != 'Free') {
+      final cleanPrice = course.price.replaceAll(RegExp(r'\D'), '');
+      final parsed = double.tryParse(cleanPrice);
+      if (parsed != null && parsed > 0) {
+        return parsed;
+      }
     }
-    return coursePricing[courseTitle]?['display'] ?? 6999.0;
+    // Fallback to website's calculation
+    final pvt = course.pvtPrice > 0 ? course.pvtPrice : 2999.0;
+    return pvt + 4000.0;
   }
 
   /// Upload file to Cloudinary

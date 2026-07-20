@@ -8,6 +8,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/course.dart';
 import '../../providers/enrollment_service.dart';
+import '../../providers/course_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
@@ -105,7 +106,11 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     if (user != null) {
       _emailController.text = user.email ?? '';
     }
-    _selectedCourse = widget.course.title;
+    if (widget.course.slug == 'general') {
+      _selectedCourse = null;
+    } else {
+      _selectedCourse = widget.course.title;
+    }
 
     _loadDraft();
 
@@ -267,7 +272,57 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     }
   }
 
+  Course get _resolvedCourse {
+    if (widget.course.slug == 'general' && _selectedCourse != null) {
+      final courses = ref.read(courseProvider).value ?? [];
+      
+      // 1. Try exact title match (case-insensitive & trimmed)
+      final titleMatch = courses.firstWhere(
+        (c) => c.title.trim().toLowerCase() == _selectedCourse!.trim().toLowerCase(),
+        orElse: () => widget.course,
+      );
+      if (titleMatch.slug != 'general') return titleMatch;
+
+      // 2. Map friendly display titles from _courseOptions to database slugs
+      final Map<String, String> friendlyToSlug = {
+        "AutoCAD": "autocad-2d-3d-design",
+        "Revit Building Information Modeling (BIM)": "revit-bim",
+        "Java Programming": "java-programming",
+        "Python for Data Science & AI": "python-data-science-ai",
+        "Python Programming": "python-programming",
+        "MATLAB for Scientific Computing": "matlab-scientific-computing",
+        "STAAD Pro": "staadpro",
+        "SolidWorks": "solidworks",
+        "CATIA": "catia",
+        "Android & iOS Mobile Development": "android-ios-mobile-development",
+        "IoT & Embedded Systems": "iot-embedded",
+        "3DS Max + VRay": "3dsmax-vray",
+        "SketchUp": "sketchup",
+        "ETABS": "etabs",
+        "Data Science": "data-science",
+        "AI": "artificial-intelligence",
+        "C++": "c-cpp-programming",
+        "ANSYS": "ansys-simulation",
+        "Primavera P6": "primavera",
+        "CorelDRAW": "coreldraw",
+        "AutoCAD 2.0 Advance": "advance-autocad",
+        "AutoCAD (Electrical)": "autocad-electrical",
+        "AutoCAD (Mechanical)": "autocad-mechanical",
+      };
+
+      final slug = friendlyToSlug[_selectedCourse];
+      if (slug != null) {
+        return courses.firstWhere(
+          (c) => c.slug == slug,
+          orElse: () => widget.course,
+        );
+      }
+    }
+    return widget.course;
+  }
+
   bool get _isFormComplete {
+    final course = _resolvedCourse;
     final baseComplete = _fullNameController.text.isNotEmpty &&
         _fatherNameController.text.isNotEmpty &&
         _gender != null &&
@@ -283,7 +338,7 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         _state != null &&
         _marks10Controller.text.isNotEmpty &&
         _marksSemController.text.isNotEmpty &&
-        (!widget.course.isInternship || (_duration != null && _internshipMode != null));
+        (!course.isInternship || (_duration != null && _internshipMode != null));
     return baseComplete;
   }
 
@@ -292,15 +347,14 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
     return ref.read(enrollmentServiceProvider).calculateFee(
       _collegeType!, 
       _state!, 
-      courseTitle: _selectedCourse,
+      course: _resolvedCourse,
       duration: _duration,
       internshipMode: _internshipMode,
-      isInternship: widget.course.isInternship,
     );
   }
 
   double get _displayPrice {
-    return ref.read(enrollmentServiceProvider).getDisplayPrice(_selectedCourse ?? widget.course.title);
+    return ref.read(enrollmentServiceProvider).getDisplayPrice(_resolvedCourse);
   }
 
   Future<void> _submitForm() async {
@@ -346,20 +400,20 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
         'brn': _brnController.text,
         'college_type': _collegeType,
         'state': _state,
-        'course_title': _selectedCourse,
-        'message': widget.course.isInternship && _internshipMode != null ? '[Internship Mode: $_internshipMode] ${_messageController.text}' : _messageController.text,
+        'course_title': _resolvedCourse.title,
+        'message': _resolvedCourse.isInternship && _internshipMode != null ? '[Internship Mode: $_internshipMode] ${_messageController.text}' : _messageController.text,
         'marks10': _marks10Controller.text,
         'marks12': _marks12Controller.text,
         'marksSem': _marksSemController.text,
         'marksheet12Url': url12,
         'marksheetSemUrl': urlSem,
-        'duration': widget.course.isInternship ? _duration : null,
-        'internship_mode': widget.course.isInternship ? _internshipMode : null,
+        'duration': _resolvedCourse.isInternship ? _duration : null,
+        'internship_mode': _resolvedCourse.isInternship ? _internshipMode : null,
         'user_id': user?.id,
         'original_mrp': _displayPrice,
         'fee_paid': _currentFee,
         'gateway_type': 'cashfree',
-        'enrollment_type': widget.course.programType?.toLowerCase() ?? (widget.course.isInternship ? 'internship' : 'foundation'),
+        'enrollment_type': _resolvedCourse.programType?.toLowerCase() ?? (_resolvedCourse.isInternship ? 'internship' : 'foundation'),
       };
 
       // 3. Initiate Payment
@@ -408,6 +462,13 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final coursesAsync = ref.watch(courseProvider);
+    final courses = coursesAsync.value ?? [];
+    final courseOptions = courses.isNotEmpty 
+        ? courses.where((c) => c.slug != 'general').map((c) => c.title).toList()
+        : _courseOptions;
+    final selectedValue = courseOptions.contains(_selectedCourse) ? _selectedCourse : null;
+    final resolvedCourse = _resolvedCourse;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -553,18 +614,18 @@ class _EnrollmentFormScreenState extends ConsumerState<EnrollmentFormScreen> {
                       if (widget.course.slug == 'general')
                         _buildDropdownField(
                           'Choose Course', 
-                          _courseOptions, 
+                          courseOptions, 
                           (val) { setState(() => _selectedCourse = val); _saveDraft(); },
-                          value: _selectedCourse,
+                          value: selectedValue,
                         ),
-                      if (widget.course.isInternship)
+                      if (resolvedCourse.isInternship)
                         _buildDropdownField(
                           'Internship Mode', 
                           ['Online', 'Online + Offline'], 
                           (val) { setState(() => _internshipMode = val); _saveDraft(); },
                           value: _internshipMode,
                         ),
-                      if (widget.course.isInternship)
+                      if (resolvedCourse.isInternship)
                         _buildDropdownField(
                           'Internship Duration', 
                           ['2 Weeks', '4 Weeks', '6 Weeks', '8 Weeks'], 
